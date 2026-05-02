@@ -1,0 +1,139 @@
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
+import { authService } from "../../services/api";
+import { TipoIdentificacion, TipoIdentificacionLabels } from "../../types";
+
+const LoginPage: React.FC = () => {
+  const { login } = useAuth();
+  const navigate = useNavigate();
+
+  const [form, setForm] = useState({
+    tipoDocumento: TipoIdentificacion.CedulaDeCiudadania,
+    numeroIdentificacion: "",
+    contraseña: "",
+  });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+    setError("");
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!form.numeroIdentificacion || !form.contraseña) {
+      setError("Todos los campos son obligatorios.");
+      return;
+    }
+    setLoading(true);
+    try {
+      const res = await authService.login(form);
+      login(res);
+      navigate("/dashboard");
+    } catch {
+      setError("Credenciales inválidas. Verifique su número de identificación y contraseña.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="login-page">
+      <div className="login-bg-pattern" />
+      <div className="flag-bar" />
+
+      {/* Header */}
+      <header className="login-header">
+        <div className="escudo">
+          <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+            <circle cx="14" cy="14" r="12" stroke="rgba(255,255,255,.6)" strokeWidth="1.5" />
+            <path d="M14 4 L18 10 L24 10 L19 15 L21 22 L14 18 L7 22 L9 15 L4 10 L10 10 Z"
+              fill="rgba(255,255,255,.5)" />
+          </svg>
+        </div>
+        <div className="gov-name">
+          <h1>República de Colombia</h1>
+          <p>Departamento Administrativo de la Función Pública</p>
+        </div>
+      </header>
+
+      {/* Center Card */}
+      <div className="login-center">
+        <div className="login-card animate-in">
+          <h2>Iniciar sesión</h2>
+          <p className="login-sub">Sistema de Gestión del Empleo Público — SIGEP II</p>
+
+          {error && (
+            <div className="alert alert-danger" style={{ marginBottom: 16 }}>
+              <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20" style={{ flexShrink: 0, marginTop: 1 }}>
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+              </svg>
+              {error}
+            </div>
+          )}
+
+          <form className="login-form" onSubmit={handleSubmit}>
+            <div className="form-group">
+              <label className="form-label">Tipo de documento</label>
+              <select
+                name="tipoDocumento"
+                className="form-select"
+                value={form.tipoDocumento}
+                onChange={handleChange}
+              >
+                {Object.entries(TipoIdentificacionLabels).map(([value, label]) => (
+                  <option key={value} value={value}>{label}</option>
+                ))}
+              </select>
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">Número de identificación</label>
+              <input
+                type="text"
+                name="numeroIdentificacion"
+                className="form-input"
+                placeholder="Ej: 1234567890"
+                value={form.numeroIdentificacion}
+                onChange={handleChange}
+                autoComplete="username"
+              />
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">Contraseña</label>
+              <input
+                type="password"
+                name="contraseña"
+                className="form-input"
+                placeholder="••••••••"
+                value={form.contraseña}
+                onChange={handleChange}
+                autoComplete="current-password"
+              />
+            </div>
+
+            <button type="submit" className="btn btn-primary w-full btn-lg" disabled={loading}>
+              {loading ? <span className="spinner" /> : null}
+              {loading ? "Verificando..." : "Ingresar al sistema"}
+            </button>
+          </form>
+
+          <div className="divider" />
+          <p className="text-sm text-muted" style={{ textAlign: "center" }}>
+            ¿Problemas para acceder?{" "}
+            <a href="#" style={{ color: "var(--brand-600)" }}>Recuperar contraseña</a>
+          </p>
+        </div>
+      </div>
+
+      <footer className="login-footer">
+        © 2025 Departamento Administrativo de la Función Pública · SIGEP II v2.0
+      </footer>
+    </div>
+  );
+};
+
+export default LoginPage;

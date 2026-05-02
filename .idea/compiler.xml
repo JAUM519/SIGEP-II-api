@@ -18,4 +18,8 @@
       <module name="backend" options="-parameters" />
     </option>
   </component>
+  <component name="TypeScriptCompiler">
+    <option name="useServicePoweredTypesEnabledManually" value="true" />
+    <option name="useServicePoweredTypesWasEnabledByExperiment" value="true" />
+  </component>
 </project>
