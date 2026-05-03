@@ -13,7 +13,6 @@ import org.springframework.validation.annotation.Validated;
 @NoArgsConstructor
 @Validated
 public class NuevoUsuarioRequest {
-    @NotBlank
     private TipoIdentificacionUsuarios tipoIdentificacion;
     @NotBlank
     private String numeroIdentificacion;

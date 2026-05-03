@@ -3,6 +3,7 @@ package com.apirest.backend.models;
 import com.apirest.backend.models.enums.RolUsuarios;
 import com.apirest.backend.models.enums.TipoIdentificacionUsuarios;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
@@ -14,6 +15,7 @@ import java.time.Instant;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 public class UsuarioModelo {
     @Id
     private String id;

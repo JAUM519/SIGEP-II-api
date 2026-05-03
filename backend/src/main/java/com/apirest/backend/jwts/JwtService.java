@@ -22,7 +22,7 @@ public class JwtService {
     @Value("${jwt.llave}")
     private String llaveScreta;
 
-    @Value("${jwt.llave}")
+    @Value("${jwt.expiracion}")
     private long expiracionMinutos;
 
 

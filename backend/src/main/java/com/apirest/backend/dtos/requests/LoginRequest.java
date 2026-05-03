@@ -1,5 +1,6 @@
 package com.apirest.backend.dtos.requests;
 
+import com.apirest.backend.models.enums.TipoIdentificacionUsuarios;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -12,7 +13,7 @@ import org.springframework.validation.annotation.Validated;
 @Validated
 public class LoginRequest {
     @NotBlank
-    private String tipoDocumento;
+    private TipoIdentificacionUsuarios tipoDocumento;
     @NotBlank
     private String numeroIdentificacion;
     private String contraseña;

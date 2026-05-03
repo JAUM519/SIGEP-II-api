@@ -6,9 +6,11 @@ import com.apirest.backend.dtos.requests.NuevoUsuarioRequest;
 import com.apirest.backend.dtos.requests.RecuperarConRequest;
 import com.apirest.backend.dtos.responses.LoginResponse;
 import com.apirest.backend.exceptions.InvalidCredentialsException;
+import com.apirest.backend.exceptions.UserAlreadyExistsException;
 import com.apirest.backend.exceptions.UserNotFoundException;
 import com.apirest.backend.jwts.JwtService;
 import com.apirest.backend.models.UsuarioModelo;
+import com.apirest.backend.models.enums.RolUsuarios;
 import com.apirest.backend.repositories.IUsuarioRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -32,7 +34,7 @@ public class AuthServiceImp implements IAuthService{
 
     @Override
     public LoginResponse login(LoginRequest usuarioRequest) {
-        Optional<UsuarioModelo> usuarioExiste = usuarioRepository.findByNumeroDocumentoAndTipoDocumento(usuarioRequest.getNumeroIdentificacion(), usuarioRequest.getTipoDocumento());
+        Optional<UsuarioModelo> usuarioExiste = usuarioRepository.findByNumeroIdentificacionAndTipoIdentificacion(usuarioRequest.getNumeroIdentificacion(), usuarioRequest.getTipoDocumento());
         if (!usuarioExiste.isPresent()) {
             throw new UserNotFoundException(usuarioRequest.getNumeroIdentificacion());
         }
@@ -62,6 +64,24 @@ public class AuthServiceImp implements IAuthService{
 
     @Override
     public void crearUsuario(NuevoUsuarioRequest usuarioRequest) {
+        Optional<UsuarioModelo> usuarioExiste = usuarioRepository.findByNumeroIdentificacionAndTipoIdentificacion(usuarioRequest.getNumeroIdentificacion(), usuarioRequest.getTipoIdentificacion());
+        if (usuarioExiste.isPresent()) {
+            throw new UserAlreadyExistsException("El tipo y número de identificación ya están en uso. ");
+        }
+        Optional<UsuarioModelo> usuarioExisteEmail = usuarioRepository.findByEmail(usuarioRequest.getEmail());
+        if (usuarioExisteEmail.isPresent()) {
+            throw new UserAlreadyExistsException("Este email ya está en uso. ");
+        }
+        UsuarioModelo usuarioFinal = UsuarioModelo.builder()
+                .tipoIdentificacion(usuarioRequest.getTipoIdentificacion())
+                .numeroIdentificacion(usuarioRequest.getNumeroIdentificacion())
+                .email(usuarioRequest.getEmail())
+                .contraseña(passwordEncoder.encode(usuarioRequest.getContraseña()))
+                .rol(RolUsuarios.servidorPublico)
+                .estadoActivo(true)
+                .build();
+
+        usuarioRepository.save(usuarioFinal);
 
     }
 
