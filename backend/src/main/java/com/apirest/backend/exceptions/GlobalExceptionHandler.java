@@ -31,6 +31,13 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(e.getMessage(), HttpStatus.UNAUTHORIZED);
     }
 
+
+    @ExceptionHandler(UserAlreadyExistsException.class)
+    public ResponseEntity<String> UserAlreadyExistsException(UserAlreadyExistsException e) {
+        return new ResponseEntity<>(e.getMessage(), HttpStatus.CONFLICT);
+    }
+
+
     // Errores de validación (@Valid)
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<String> handleValidationException(

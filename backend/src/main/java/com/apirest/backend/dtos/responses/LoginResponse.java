@@ -3,8 +3,10 @@ package com.apirest.backend.dtos.responses;
 import com.apirest.backend.models.enums.TipoIdentificacionUsuarios;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Data;
 import lombok.NoArgsConstructor;
 
+@Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder

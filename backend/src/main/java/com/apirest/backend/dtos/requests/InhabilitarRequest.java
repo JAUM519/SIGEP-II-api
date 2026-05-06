@@ -1,7 +1,9 @@
 package com.apirest.backend.dtos.requests;
 
 import com.apirest.backend.models.enums.TipoIdentificacionUsuarios;
+import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -14,10 +16,10 @@ import java.time.Instant;
 @NoArgsConstructor
 @Validated
 public class InhabilitarRequest {
-    @NotBlank
+    @NotNull
     private TipoIdentificacionUsuarios tipoIdentificacion;
     @NotBlank
     private String numeroIdentificacion;
-    @NotBlank
+    @NotNull
     private Instant fechaFin;
 }
