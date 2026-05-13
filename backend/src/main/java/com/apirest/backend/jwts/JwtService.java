@@ -46,8 +46,29 @@ public class JwtService {
 
     }
 
+    public String generarTokenRecuperacion(String usuarioId, RolUsuarios rol, String numeroIdentificacion) {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("rol", rol);
+        claims.put("numeroIdentificacion", numeroIdentificacion);
+        claims.put("proposito", "recuperar_contraseña");
+
+        return Jwts.builder()
+                .setClaims(claims)
+                .setSubject(usuarioId)
+                .setIssuedAt(new Date(System.currentTimeMillis()))
+                .setExpiration(new Date(System.currentTimeMillis() + 900000))
+                .signWith(getKey(), SignatureAlgorithm.HS256)
+                .compact();
+
+    }
+
     public String getUsuarioIdFromToken(String token) {
         return getClaim(token, Claims::getSubject);
+    }
+
+    public Object getClaimByName(String token, String claimName) {
+        final Claims claims = getAllClaims(token);
+        return claims.get(claimName);
     }
 
     public boolean validarToken(String token, UsuarioModelo usuario) {
@@ -73,7 +94,12 @@ public class JwtService {
         return getClaim(token, Claims::getExpiration);
     }
 
-    private boolean isExpiradoToken(String token) {
-        return getFechaExpiracion(token).before(new Date());
+    public boolean isExpiradoToken(String token) {
+        try{
+            return getFechaExpiracion(token).before(new Date());
+        } catch (Exception e) {
+            return true;
+        }
+
     }
 }

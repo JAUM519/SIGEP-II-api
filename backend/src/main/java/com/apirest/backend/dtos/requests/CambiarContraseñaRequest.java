@@ -1,7 +1,7 @@
 package com.apirest.backend.dtos.requests;
 
-import com.apirest.backend.models.enums.TipoIdentificacionUsuarios;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -11,9 +11,9 @@ import org.springframework.validation.annotation.Validated;
 @AllArgsConstructor
 @NoArgsConstructor
 @Validated
-public class RecuperarConRequest {
+public class CambiarContraseñaRequest {
+
     @NotBlank
-    private TipoIdentificacionUsuarios tipoIdentificacion;
-    @NotBlank
-    private String numeroIdentificacion;
+    @Size(min = 6)
+    private String contraseña;
 }

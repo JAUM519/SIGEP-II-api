@@ -1,9 +1,6 @@
 package com.apirest.backend.controllers;
 
-import com.apirest.backend.dtos.requests.CambiarContraseña;
-import com.apirest.backend.dtos.requests.InhabilitarRequest;
-import com.apirest.backend.dtos.requests.LoginRequest;
-import com.apirest.backend.dtos.requests.NuevoUsuarioRequest;
+import com.apirest.backend.dtos.requests.*;
 import com.apirest.backend.dtos.responses.LoginResponse;
 import com.apirest.backend.models.UsuarioModelo;
 import com.apirest.backend.services.IAuthService;
@@ -27,29 +24,40 @@ public class AuthController {
 
 
     @PostMapping("/login")
-    ResponseEntity<LoginResponse> login(@RequestBody LoginRequest usuarioRequest) {
+    public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest usuarioRequest) {
         return ResponseEntity.ok(authService.login(usuarioRequest));
     }
 
     @PreAuthorize("hasRole('jefeDeTalentoHumano')")
     @PostMapping("/registro")
-    ResponseEntity<Void> crearUsuario(@Valid @RequestBody NuevoUsuarioRequest usuarioRequest){
+    public ResponseEntity<Void> crearUsuario(@Valid @RequestBody NuevoUsuarioRequest usuarioRequest){
         authService.crearUsuario(usuarioRequest);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
     @PreAuthorize("hasRole('jefeDeTalentoHumano')")
     @PutMapping("/inhabilitarUsuario")
-    ResponseEntity<Void> inhabilitarUsuario(@Valid @RequestBody InhabilitarRequest usuarioRequest){
+    public ResponseEntity<Void> inhabilitarUsuario(@Valid @RequestBody InhabilitarRequest usuarioRequest){
         authService.inhabilitarUsuario(usuarioRequest);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @PutMapping("/cambiarContraseña")
-    ResponseEntity<Void> cambiarContraseña(@AuthenticationPrincipal UsuarioModelo usuario, @RequestBody CambiarContraseña contraseñaNueva){
+    public ResponseEntity<Void> cambiarContraseña(@AuthenticationPrincipal UsuarioModelo usuario, @RequestBody CambiarContraseñaRequest contraseñaNueva){
         authService.cambiarContraseña(usuario.getId(), contraseñaNueva);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
+    @PostMapping("/pedirEnlace")
+    public ResponseEntity<String> pedirEnlaceEmail(@RequestBody PedirEnlaceEmailRequest usuarioRequest){
+        authService.pedirEnlaceEmail(usuarioRequest);
+        return ResponseEntity.ok("Se ha enviado un enlace a su correo electronico. ");
+    }
+
+    @PostMapping("/recuperarContraseña")
+    public ResponseEntity<String> recuperarContraseña(@RequestParam String token, @RequestBody CambiarContraseñaRequest usuarioRequest){
+        authService.cambiarContraseñaDesdeEmail(token, usuarioRequest);
+        return ResponseEntity.ok("Contraseña cambiada papi al toque su rey. ");
+    }
 
 }
