@@ -43,19 +43,19 @@ public class AuthController {
     }
 
     @PutMapping("/cambiarContraseña")
-    public ResponseEntity<Void> cambiarContraseña(@AuthenticationPrincipal UsuarioModelo usuario, @RequestBody CambiarContraseñaRequest contraseñaNueva){
+    public ResponseEntity<Void> cambiarContraseña(@AuthenticationPrincipal UsuarioModelo usuario, @Valid @RequestBody CambiarContraseñaRequest contraseñaNueva){
         authService.cambiarContraseña(usuario.getId(), contraseñaNueva);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @PostMapping("/pedirEnlace")
-    public ResponseEntity<String> pedirEnlaceEmail(@RequestBody PedirEnlaceEmailRequest usuarioRequest){
+    public ResponseEntity<String> pedirEnlaceEmail(@Valid @RequestBody PedirEnlaceEmailRequest usuarioRequest){
         authService.pedirEnlaceEmail(usuarioRequest);
         return ResponseEntity.ok("Se ha enviado un enlace a su correo electronico. ");
     }
 
     @PostMapping("/recuperarContraseña")
-    public ResponseEntity<String> recuperarContraseña(@RequestParam String token, @RequestBody CambiarContraseñaRequest usuarioRequest){
+    public ResponseEntity<String> recuperarContraseña(@RequestParam String token, @Valid @RequestBody CambiarContraseñaRequest usuarioRequest){
         authService.cambiarContraseñaDesdeEmail(token, usuarioRequest);
         return ResponseEntity.ok("Contraseña cambiada papi al toque su rey. ");
     }

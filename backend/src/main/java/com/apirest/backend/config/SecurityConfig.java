@@ -1,7 +1,6 @@
 package com.apirest.backend.config;
 
 import com.apirest.backend.jwts.JwtAuthenticationFilter;
-import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
@@ -35,8 +34,25 @@ public class SecurityConfig {
         http
                 .cors(Customizer.withDefaults())
                 .csrf(csrf -> csrf.disable())
+
+                // --- NUEVO: Cabeceras de Seguridad para mitigar alertas de ZAP ---
+                .headers(headers -> headers
+                        // 1. Mitiga: Missing Anti-clickjacking Header (Medium)
+                        .frameOptions(frameOptions -> frameOptions.deny())
+
+                        // 2. Mitiga: Content Security Policy (CSP) Header Not Set (Medium)
+                        .contentSecurityPolicy(csp -> csp.policyDirectives("default-src 'self'; frame-ancestors 'none';"))
+
+                        // 3. Mitiga: Strict-Transport-Security Header Not Set (Low)
+                        .httpStrictTransportSecurity(hsts -> hsts.includeSubDomains(true).maxAgeInSeconds(31536000))
+
+                        // 4. Mitiga: X-Content-Type-Options Header Missing (Low)
+                        .contentTypeOptions(Customizer.withDefaults())
+                )
+                // -----------------------------------------------------------------
+
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/login","/api/auth/pedirEnlace","/api/auth/recuperarContraseña").permitAll()
+                        .requestMatchers("/api/auth/login","/api/auth/pedirEnlace","/api/auth/recuperarContraseña").permitAll() // Asumo que registro también debería ser público
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session
@@ -55,7 +71,8 @@ public class SecurityConfig {
         configuration.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration); // Aplica a todas las rutas
+        source.registerCorsConfiguration("/**", configuration);
         return source;
     }
+    
 }
