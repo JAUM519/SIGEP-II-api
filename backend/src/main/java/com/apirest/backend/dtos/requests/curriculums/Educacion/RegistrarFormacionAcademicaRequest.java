@@ -38,15 +38,15 @@ public class RegistrarFormacionAcademicaRequest {
     private EstadoEstudioCurriculum estadoEstudio;
     private Instant fechaTerminacionMaterias;
     private Instant fechaGrado;
-    private boolean estudioConvalidado;
+    private Boolean estudioConvalidado;
     private Instant fechaConvalidacion;
     @Size(max=150)
     private String tarjetaProfesional;
     private Instant estudioExterior;
     @Size(max=150)
     private String archivoTarjetaProfesioal;
-    private boolean verificTarjetaProfesional;
+    private Boolean verificTarjetaProfesional;
     @Size(max=150)
     private String archivoEducacionFormal;
-    private boolean verificEducacionFormal;
+    private Boolean verificEducacionFormal;
 }

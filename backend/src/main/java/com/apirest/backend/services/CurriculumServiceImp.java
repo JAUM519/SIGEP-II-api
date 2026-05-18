@@ -2,15 +2,19 @@ package com.apirest.backend.services;
 
 
 import com.apirest.backend.dtos.requests.curriculums.DatosPersonales.*;
+import com.apirest.backend.dtos.requests.curriculums.Educacion.RegistrarEducacionTrabajoRequest;
+import com.apirest.backend.dtos.requests.curriculums.Educacion.RegistrarFormacionAcademicaRequest;
+import com.apirest.backend.dtos.requests.curriculums.Educacion.RegistrarIdiomaRequest;
 import com.apirest.backend.exceptions.CurriculumAlreadyExistsException;
 import com.apirest.backend.exceptions.CurriculumNotFoundException;
 import com.apirest.backend.models.curriculum.CurriculumModelo;
-import com.apirest.backend.models.curriculum.sections.DatosBasicos;
-import com.apirest.backend.models.curriculum.sections.DatosContacto;
-import com.apirest.backend.models.curriculum.sections.DatosDemograficos;
+import com.apirest.backend.models.curriculum.DatosPersonales;
+import com.apirest.backend.models.curriculum.Educacion;
+import com.apirest.backend.models.curriculum.sections.*;
 import com.apirest.backend.repositories.ICurriculumRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Optional;
 
 @Service
@@ -25,10 +29,13 @@ public class CurriculumServiceImp implements ICurriculumService{
     @Override
     public void registrarDatosPersonalesBasicos(String usuarioId, RegistrarDatosBasicosRequest curriculumRequest) {
         Optional<CurriculumModelo> curriculumExiste = curriculumRepository.findByUsuarioId(usuarioId);
-        if (curriculumExiste.isPresent()){
+        if (!curriculumExiste.isPresent()){
             throw new CurriculumAlreadyExistsException("Este usuario ya tiene datos basicos registrados. ");
         }
         CurriculumModelo curriculumFinal = new CurriculumModelo();
+        if (curriculumFinal.getDatosPersonales() == null) {
+            curriculumFinal.setDatosPersonales(new DatosPersonales());
+        }
         curriculumFinal.setUsuarioId(usuarioId);
         curriculumFinal.getDatosPersonales().setDatosBasicos(DatosBasicos.builder()
                         .nombre(curriculumRequest.getNombre())
@@ -53,7 +60,7 @@ public class CurriculumServiceImp implements ICurriculumService{
     @Override
     public void actualizarDatosPersonalesBasicos(String usuarioId, ActualizarDatosBasicosRequest curriculumRequest) {
         Optional<CurriculumModelo> curriculumExiste = curriculumRepository.findByUsuarioId(usuarioId);
-        if (curriculumExiste.isPresent()){
+        if (!curriculumExiste.isPresent()){
             throw new CurriculumNotFoundException("No se ha encontrado datos basicos registrados para el usuario " + usuarioId);
         }
         CurriculumModelo curriculumFinal = curriculumExiste.get();
@@ -83,7 +90,7 @@ public class CurriculumServiceImp implements ICurriculumService{
     @Override
     public void registrarDatosDemograficos(String usuarioId, RegistrarDatosDemograficosRequest curriculumRequest) {
         Optional<CurriculumModelo> curriculumExiste = curriculumRepository.findByUsuarioId(usuarioId);
-        if (curriculumExiste.isPresent()){
+        if (!curriculumExiste.isPresent()){
             throw new CurriculumNotFoundException("No se ha encontrado un curriculum registrado para el usuario " + usuarioId);
         }
 
@@ -105,7 +112,7 @@ public class CurriculumServiceImp implements ICurriculumService{
     @Override
     public void actualizarDatosDemograficos(String usuarioId, ActualizarDatosDemograficosRequest curriculumRequest) {
         Optional<CurriculumModelo> curriculumExiste = curriculumRepository.findByUsuarioId(usuarioId);
-        if (curriculumExiste.isPresent()){
+        if (!curriculumExiste.isPresent()){
             throw new CurriculumNotFoundException("No se ha encontrado un curriculum registrado para el usuario " + usuarioId);
         }
 
@@ -128,7 +135,7 @@ public class CurriculumServiceImp implements ICurriculumService{
     @Override
     public void registrarDatosContacto(String usuarioId, RegistrarDatosContactoRequest curriculumRequest) {
         Optional<CurriculumModelo> curriculumExiste = curriculumRepository.findByUsuarioId(usuarioId);
-        if (curriculumExiste.isPresent()){
+        if (!curriculumExiste.isPresent()){
             throw new CurriculumNotFoundException("No se ha encontrado un curriculum registrado para el usuario " + usuarioId);
         }
 
@@ -154,7 +161,7 @@ public class CurriculumServiceImp implements ICurriculumService{
     @Override
     public void actualizarDatosContacto(String usuarioId, ActualizarDatosContactoRequest curriculumRequest) {
         Optional<CurriculumModelo> curriculumExiste = curriculumRepository.findByUsuarioId(usuarioId);
-        if (curriculumExiste.isPresent()){
+        if (!curriculumExiste.isPresent()){
             throw new CurriculumNotFoundException("No se ha encontrado un curriculum registrado para el usuario " + usuarioId);
         }
 
@@ -193,6 +200,116 @@ public class CurriculumServiceImp implements ICurriculumService{
         if (curriculumRequest.getEmailOficina() != null && !curriculumRequest.getEmailOficina().isBlank()){
             curriculumFinal.getDatosPersonales().getDatosContacto().setEmailOficina(curriculumRequest.getEmailOficina());
         }
+
+        curriculumRepository.save(curriculumFinal);
+    }
+
+    @Override
+    public void registrarFormacionAcademica(String usuarioId, RegistrarFormacionAcademicaRequest curriculumRequest) {
+        Optional<CurriculumModelo> curriculumExiste = curriculumRepository.findByUsuarioId(usuarioId);
+        if (!curriculumExiste.isPresent()){
+            throw new CurriculumNotFoundException("No se ha encontrado un curriculum registrado para el usuario " + usuarioId);
+        }
+
+        CurriculumModelo curriculumFinal = curriculumExiste.get();
+
+        if (curriculumFinal.getEducacion() == null) {
+            curriculumFinal.setEducacion(new Educacion());
+        }
+
+        if (curriculumFinal.getEducacion().getFormacionesAcademicas() == null) {
+            curriculumFinal.getEducacion().setFormacionesAcademicas(new ArrayList<>());
+        }
+
+        FormacionAcademica formacionAcademica = FormacionAcademica.builder()
+                .nivelAcademico(curriculumRequest.getNivelAcademico())
+                .nivelFormacion(curriculumRequest.getNivelFormacion())
+                .areaConocimiento(curriculumRequest.getAreaConocimiento())
+                .pais(curriculumRequest.getPais())
+                .institucion(curriculumRequest.getInstitucion())
+                .programaAcademico(curriculumRequest.getProgramaAcademico())
+                .tituloObtenido(curriculumRequest.getTituloObtenido())
+                .semestresAprobados(curriculumRequest.getSemestresAprobados())
+                .estadoEstudio(curriculumRequest.getEstadoEstudio())
+                .fechaTerminacionMaterias(curriculumRequest.getFechaTerminacionMaterias())
+                .fechaGrado(curriculumRequest.getFechaGrado())
+                .estudioConvalidado(curriculumRequest.getEstudioConvalidado())
+                .fechaConvalidacion(curriculumRequest.getFechaConvalidacion())
+                .tarjetaProfesional(curriculumRequest.getTarjetaProfesional())
+                .estudioExterior(curriculumRequest.getEstudioExterior())
+                .archivoTarjetaProfesioal(curriculumRequest.getArchivoTarjetaProfesioal())
+                .verificTarjetaProfesional(curriculumRequest.getVerificTarjetaProfesional())
+                .archivoEducacionFormal(curriculumRequest.getArchivoEducacionFormal())
+                .verificEducacionFormal(curriculumRequest.getVerificEducacionFormal())
+                .build();
+
+        curriculumFinal.getEducacion().getFormacionesAcademicas().add(formacionAcademica);
+
+        curriculumRepository.save(curriculumFinal);
+    }
+
+    @Override
+    public void registrarEducacionTrabajo(String usuarioId, RegistrarEducacionTrabajoRequest curriculumRequest) {
+        Optional<CurriculumModelo> curriculumExiste = curriculumRepository.findByUsuarioId(usuarioId);
+        if (!curriculumExiste.isPresent()){
+            throw new CurriculumNotFoundException("No se ha encontrado un curriculum registrado para el usuario " + usuarioId);
+        }
+
+        CurriculumModelo curriculumFinal = curriculumExiste.get();
+
+        if (curriculumFinal.getEducacion() == null) {
+            curriculumFinal.setEducacion(new Educacion());
+        }
+
+        if (curriculumFinal.getEducacion().getEducacionTrabajos() == null) {
+            curriculumFinal.getEducacion().setEducacionTrabajos(new ArrayList<>());
+        }
+
+        EducacionTrabajo educacionTrabajo = EducacionTrabajo.builder()
+                .fechaFinalizacion(curriculumRequest.getFechaFinalizacion())
+                .numeroTotalHoras(curriculumRequest.getNumeroTotalHoras())
+                .pais(curriculumRequest.getPais())
+                .nombre(curriculumRequest.getNombre())
+                .institucion(curriculumRequest.getInstitucion())
+                .medioCapacitacion(curriculumRequest.getMedioCapacitacion())
+                .modalidad(curriculumRequest.getModalidad())
+                .diplomaActaCertificadoEstudio(curriculumRequest.getDiplomaActaCertificadoEstudio())
+                .build();
+
+        curriculumFinal.getEducacion().getEducacionTrabajos().add(educacionTrabajo);
+
+        curriculumRepository.save(curriculumFinal);
+
+    }
+
+    @Override
+    public void registrarIdioma(String usuarioId, RegistrarIdiomaRequest curriculumRequest) {
+        Optional<CurriculumModelo> curriculumExiste = curriculumRepository.findByUsuarioId(usuarioId);
+        if (!curriculumExiste.isPresent()){
+            throw new CurriculumNotFoundException("No se ha encontrado un curriculum registrado para el usuario " + usuarioId);
+        }
+
+        CurriculumModelo curriculumFinal = curriculumExiste.get();
+
+        if (curriculumFinal.getEducacion() == null) {
+            curriculumFinal.setEducacion(new Educacion());
+        }
+
+        if (curriculumFinal.getEducacion().getIdiomas() == null) {
+            curriculumFinal.getEducacion().setIdiomas(new ArrayList<>());
+        }
+
+        Idioma idiomaFinal = Idioma.builder()
+                .idioma(curriculumRequest.getIdioma())
+                .fechaCertificado(curriculumRequest.getFechaCertificado())
+                .conversacion(curriculumRequest.getConversacion())
+                .lectura(curriculumRequest.getLectura())
+                .redaccion(curriculumRequest.getRedaccion())
+                .lenguaNativa(curriculumRequest.getLenguaNativa())
+                .certificado(curriculumRequest.getCertificado())
+                .build();
+
+        curriculumFinal.getEducacion().getIdiomas().add(idiomaFinal);
 
         curriculumRepository.save(curriculumFinal);
     }

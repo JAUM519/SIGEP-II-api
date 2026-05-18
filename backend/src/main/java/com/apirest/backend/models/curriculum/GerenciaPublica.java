@@ -1,5 +1,6 @@
 package com.apirest.backend.models.curriculum;
 
+import com.apirest.backend.models.curriculum.sections.ParticipacionCorporacionEntidad;
 import com.apirest.backend.models.curriculum.sections.ParticipacionProyecto;
 import com.apirest.backend.models.curriculum.sections.PremioReconocimiento;
 import com.apirest.backend.models.curriculum.sections.Publicacion;

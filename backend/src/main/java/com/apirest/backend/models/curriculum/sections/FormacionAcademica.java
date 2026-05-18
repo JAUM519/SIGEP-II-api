@@ -6,12 +6,14 @@ import com.apirest.backend.models.enums.Curriculum.EstadoEstudioCurriculum;
 import com.apirest.backend.models.enums.Curriculum.NivelAcademicoCurriculum;
 import com.apirest.backend.models.enums.Curriculum.NivelFormacionCurriculum;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 
 import java.time.Instant;
 
+@Builder
 @Data
 @AllArgsConstructor
 @NoArgsConstructor

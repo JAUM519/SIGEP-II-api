@@ -1,6 +1,9 @@
 package com.apirest.backend.controllers;
 
 import com.apirest.backend.dtos.requests.curriculums.DatosPersonales.*;
+import com.apirest.backend.dtos.requests.curriculums.Educacion.RegistrarEducacionTrabajoRequest;
+import com.apirest.backend.dtos.requests.curriculums.Educacion.RegistrarFormacionAcademicaRequest;
+import com.apirest.backend.dtos.requests.curriculums.Educacion.RegistrarIdiomaRequest;
 import com.apirest.backend.models.UsuarioModelo;
 import com.apirest.backend.services.ICurriculumService;
 import jakarta.validation.Valid;
@@ -54,4 +57,23 @@ public class CurriculumController {
         curriculumService.actualizarDatosContacto(usuario.getId(), curriculumRequest);
         return new ResponseEntity<>(HttpStatus.OK);
     }
+
+    @PostMapping("/educacion/formacionAcademica")
+    public ResponseEntity<Void> registrarFormacionAcademica(@AuthenticationPrincipal UsuarioModelo usuario, @Valid @RequestBody RegistrarFormacionAcademicaRequest curriculumRequest) {
+        curriculumService.registrarFormacionAcademica(usuario.getId(), curriculumRequest);
+        return new ResponseEntity<>(HttpStatus.CREATED);
+    }
+
+    @PostMapping("/educacion/trabajo")
+    public ResponseEntity<Void> registrarEducacionTrabajo(@AuthenticationPrincipal UsuarioModelo usuario, @Valid @RequestBody RegistrarEducacionTrabajoRequest curriculumRequest) {
+        curriculumService.registrarEducacionTrabajo(usuario.getId(), curriculumRequest);
+        return new ResponseEntity<>(HttpStatus.CREATED);
+    }
+
+    @PostMapping("/educacion/idioma")
+    public ResponseEntity<Void> registrarIdioma(@AuthenticationPrincipal UsuarioModelo usuario, @Valid @RequestBody RegistrarIdiomaRequest curriculumRequest) {
+        curriculumService.registrarIdioma(usuario.getId(), curriculumRequest);
+        return new ResponseEntity<>(HttpStatus.CREATED);
+    }
+
 }
