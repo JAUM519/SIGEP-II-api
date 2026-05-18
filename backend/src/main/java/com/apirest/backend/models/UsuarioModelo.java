@@ -1,7 +1,7 @@
 package com.apirest.backend.models;
 
-import com.apirest.backend.models.enums.RolUsuarios;
-import com.apirest.backend.models.enums.TipoIdentificacionUsuarios;
+import com.apirest.backend.models.enums.Usuario.RolUsuarios;
+import com.apirest.backend.models.enums.Usuario.TipoIdentificacionUsuarios;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -24,7 +24,7 @@ public class UsuarioModelo {
     private String contraseña;
     private String email;
     private RolUsuarios rol;
-    private boolean estadoActivo;
+    private Boolean estadoActivo;
     private Instant fechaFin;
 
 }

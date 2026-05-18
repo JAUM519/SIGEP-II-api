@@ -10,6 +10,8 @@ import java.time.Instant;
 @AllArgsConstructor
 @NoArgsConstructor
 public class EducacionTrabajo {
+    @id
+    private String id;
     private Instant fechaFinalizacion;
     private Integer numeroTotalHoras;
     private String pais;

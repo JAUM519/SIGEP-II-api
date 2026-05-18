@@ -7,7 +7,7 @@ import com.apirest.backend.exceptions.UserAlreadyExistsException;
 import com.apirest.backend.exceptions.UserNotFoundException;
 import com.apirest.backend.jwts.JwtService;
 import com.apirest.backend.models.UsuarioModelo;
-import com.apirest.backend.models.enums.RolUsuarios;
+import com.apirest.backend.models.enums.Usuario.RolUsuarios;
 import com.apirest.backend.repositories.IUsuarioRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;

@@ -1,7 +1,7 @@
 package com.apirest.backend.jwts;
 
 import com.apirest.backend.models.UsuarioModelo;
-import com.apirest.backend.models.enums.RolUsuarios;
+import com.apirest.backend.models.enums.Usuario.RolUsuarios;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;

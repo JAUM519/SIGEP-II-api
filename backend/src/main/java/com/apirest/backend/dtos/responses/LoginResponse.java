@@ -1,6 +1,6 @@
 package com.apirest.backend.dtos.responses;
 
-import com.apirest.backend.models.enums.TipoIdentificacionUsuarios;
+import com.apirest.backend.models.enums.Usuario.TipoIdentificacionUsuarios;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

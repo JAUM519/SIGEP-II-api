@@ -37,6 +37,15 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(e.getMessage(), HttpStatus.CONFLICT);
     }
 
+    @ExceptionHandler(CurriculumAlreadyExistsException.class)
+    public ResponseEntity<String> curriculumAlreadyExistsException(CurriculumAlreadyExistsException e) {
+        return new ResponseEntity<>(e.getMessage(), HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler(CurriculumNotFoundException.class)
+    public ResponseEntity<String> curriculumNotFoundException(CurriculumNotFoundException e) {
+        return new ResponseEntity<>(e.getMessage(), HttpStatus.CONFLICT);
+    }
 
     // Errores de validación (@Valid)
     @ExceptionHandler(MethodArgumentNotValidException.class)

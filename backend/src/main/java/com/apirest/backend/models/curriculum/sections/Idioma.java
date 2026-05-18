@@ -10,6 +10,8 @@ import java.time.Instant;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Idioma {
+    @id
+    private String id;
     private String idioma;
     private Instant fechaCertificado;
     private String conversacion;

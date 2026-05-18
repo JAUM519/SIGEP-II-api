@@ -1,4 +1,4 @@
-package com.apirest.backend.models.enums;
+package com.apirest.backend.models.enums.Usuario;
 
 public enum RolUsuarios {
     servidorPublico,

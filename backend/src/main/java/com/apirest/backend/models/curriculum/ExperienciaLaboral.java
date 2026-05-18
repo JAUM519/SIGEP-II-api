@@ -10,6 +10,8 @@ import java.time.Instant;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ExperienciaLaboral {
+    @id
+    private String id;
     private String tipoEntidad;
     private String nombreEntidad;
     private String pais;

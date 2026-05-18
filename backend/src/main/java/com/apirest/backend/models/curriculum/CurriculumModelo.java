@@ -20,5 +20,7 @@ public class CurriculumModelo {
     private Educacion educacion;
     private ArrayList<ExperienciaLaboral> experienciasLaborales;
     private ArrayList<ExperienciaLaboralDocente> experienciasLaboralesDocente;
+    private ArrayList<DocumentoAdicional> documentosAdicionales;
+    private GerenciaPublica gerenciaPublica;
 
 }

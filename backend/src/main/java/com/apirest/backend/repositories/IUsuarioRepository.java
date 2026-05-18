@@ -1,7 +1,7 @@
 package com.apirest.backend.repositories;
 
 import com.apirest.backend.models.UsuarioModelo;
-import com.apirest.backend.models.enums.TipoIdentificacionUsuarios;
+import com.apirest.backend.models.enums.Usuario.TipoIdentificacionUsuarios;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
 import java.util.Optional;
