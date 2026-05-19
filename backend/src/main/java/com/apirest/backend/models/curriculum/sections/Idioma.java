@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.Id;
 
 import java.time.Instant;
 
@@ -13,13 +14,13 @@ import java.time.Instant;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Idioma {
-    @id
+    @Id
     private String id;
     private String idioma;
     private Instant fechaCertificado;
     private IdiomaCurriculum conversacion;
     private IdiomaCurriculum lectura;
     private IdiomaCurriculum redaccion;
-    private String lenguaNativa;
-    private Boolean certificado;
+    private Boolean lenguaNativa;
+    private String certificado;
 }

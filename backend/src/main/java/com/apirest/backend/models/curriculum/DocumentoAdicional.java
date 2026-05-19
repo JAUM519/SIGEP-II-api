@@ -5,12 +5,13 @@ import com.apirest.backend.models.enums.Curriculum.TipoDocumentoCurriculum;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.Id;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 public class DocumentoAdicional {
-    @id
+    @Id
     private String id;
     private TipoDocumentoCurriculum tipoDocumento;
     private DescripcionDocumentoAdicionalCurriculum descripcion;

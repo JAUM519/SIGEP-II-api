@@ -1,9 +1,9 @@
 package com.apirest.backend.controllers;
 
 import com.apirest.backend.dtos.requests.curriculums.DatosPersonales.*;
-import com.apirest.backend.dtos.requests.curriculums.Educacion.RegistrarEducacionTrabajoRequest;
-import com.apirest.backend.dtos.requests.curriculums.Educacion.RegistrarFormacionAcademicaRequest;
-import com.apirest.backend.dtos.requests.curriculums.Educacion.RegistrarIdiomaRequest;
+import com.apirest.backend.dtos.requests.curriculums.Educacion.*;
+import com.apirest.backend.dtos.requests.curriculums.ExperienciaLaboral.ActualizarExperienciaLaboralDocenteRequest;
+import com.apirest.backend.dtos.requests.curriculums.ExperienciaLaboral.ActualizarExperienciaLaboralRequest;
 import com.apirest.backend.dtos.requests.curriculums.ExperienciaLaboral.RegistrarExperienciaLaboralDocenteRequest;
 import com.apirest.backend.dtos.requests.curriculums.ExperienciaLaboral.RegistrarExperienciaLaboralRequest;
 import com.apirest.backend.dtos.requests.curriculums.GerenciaPublica.RegistrarParticipacionCorporacionEntidadRequest;
@@ -28,6 +28,7 @@ public class CurriculumController {
         this.curriculumService = curriculumService;
     }
 
+    //DatosPersonales
     @PostMapping("/datosPersonales/datosBasicos")
     public ResponseEntity<Void> registrarDatosPersonalesBasicos(@AuthenticationPrincipal UsuarioModelo usuario, @Valid @RequestBody RegistrarDatosBasicosRequest curriculumRequest){
         curriculumService.registrarDatosPersonalesBasicos(usuario.getId(), curriculumRequest);
@@ -64,6 +65,7 @@ public class CurriculumController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
+    //Educacion
     @PostMapping("/educacion/formacionAcademica")
     public ResponseEntity<Void> registrarFormacionAcademica(@AuthenticationPrincipal UsuarioModelo usuario, @Valid @RequestBody RegistrarFormacionAcademicaRequest curriculumRequest) {
         curriculumService.registrarFormacionAcademica(usuario.getId(), curriculumRequest);
@@ -82,6 +84,25 @@ public class CurriculumController {
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
+    @PutMapping("/educacion/formacionAcademica")
+    public ResponseEntity<Void> actualizarFormacionAcademica(@AuthenticationPrincipal UsuarioModelo usuario, @Valid @RequestBody ActualizarFormacionAcademicaRequest curriculumRequest) {
+        curriculumService.actualizarFormacionAcademica(usuario.getId(), curriculumRequest);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @PutMapping("/educacion/trabajo")
+    public ResponseEntity<Void> actualizarEducacionTrabajo(@AuthenticationPrincipal UsuarioModelo usuario, @Valid @RequestBody ActualizarEducacionTrabajoRequest curriculumRequest) {
+        curriculumService.actualizarEducacionTrabajo(usuario.getId(), curriculumRequest);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @PutMapping("/educacion/idioma")
+    public ResponseEntity<Void> actualizarIdioma(@AuthenticationPrincipal UsuarioModelo usuario, @Valid @RequestBody ActualizarIdiomaRequest curriculumRequest) {
+        curriculumService.actualizarIdioma(usuario.getId(), curriculumRequest);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    //Experiencia
     @PostMapping("/experienciaLaboral")
     public ResponseEntity<Void> registrarExperienciaLaboral(@AuthenticationPrincipal UsuarioModelo usuario, @Valid @RequestBody RegistrarExperienciaLaboralRequest curriculumRequest) {
         curriculumService.registrarExperienciaLaboral(usuario.getId(), curriculumRequest);
@@ -94,6 +115,19 @@ public class CurriculumController {
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
+    @PutMapping("/experienciaLaboral")
+    public ResponseEntity<Void> actualizarExperienciaLaboral(@AuthenticationPrincipal UsuarioModelo usuario, @Valid @RequestBody ActualizarExperienciaLaboralRequest curriculumRequest) {
+        curriculumService.actualizarExperienciaLaboral(usuario.getId(), curriculumRequest);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @PutMapping("/experienciaLaboral/docente")
+    public ResponseEntity<Void> actualizarExperienciaLaboralDocente(@AuthenticationPrincipal UsuarioModelo usuario, @Valid @RequestBody ActualizarExperienciaLaboralDocenteRequest curriculumRequest) {
+        curriculumService.actualizarExperienciaLaboralDocente(usuario.getId(), curriculumRequest);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    //GerenciaPublica
     @PostMapping("/gerenciaPublica/publicacion")
     public ResponseEntity<Void> registrarPublicacion(@AuthenticationPrincipal UsuarioModelo usuario, @Valid @RequestBody RegistrarPublicacionRequest curriculumRequest) {
         curriculumService.registrarPublicacion(usuario.getId(), curriculumRequest);

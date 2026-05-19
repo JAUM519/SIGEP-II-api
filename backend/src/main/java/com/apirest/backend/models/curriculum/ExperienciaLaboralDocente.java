@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.Id;
 
 import java.time.Instant;
 
@@ -13,7 +14,7 @@ import java.time.Instant;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ExperienciaLaboralDocente {
-    @id
+    @Id
     private String id;
     private TipoInstitucionCurriculum tipoInstitucion;
     private String nombreInstitucion;

@@ -2,9 +2,9 @@ package com.apirest.backend.services;
 
 
 import com.apirest.backend.dtos.requests.curriculums.DatosPersonales.*;
-import com.apirest.backend.dtos.requests.curriculums.Educacion.RegistrarEducacionTrabajoRequest;
-import com.apirest.backend.dtos.requests.curriculums.Educacion.RegistrarFormacionAcademicaRequest;
-import com.apirest.backend.dtos.requests.curriculums.Educacion.RegistrarIdiomaRequest;
+import com.apirest.backend.dtos.requests.curriculums.Educacion.*;
+import com.apirest.backend.dtos.requests.curriculums.ExperienciaLaboral.ActualizarExperienciaLaboralDocenteRequest;
+import com.apirest.backend.dtos.requests.curriculums.ExperienciaLaboral.ActualizarExperienciaLaboralRequest;
 import com.apirest.backend.dtos.requests.curriculums.ExperienciaLaboral.RegistrarExperienciaLaboralDocenteRequest;
 import com.apirest.backend.dtos.requests.curriculums.ExperienciaLaboral.RegistrarExperienciaLaboralRequest;
 import com.apirest.backend.dtos.requests.curriculums.GerenciaPublica.RegistrarParticipacionCorporacionEntidadRequest;
@@ -253,6 +253,67 @@ public class CurriculumServiceImp implements ICurriculumService{
     }
 
     @Override
+    public void actualizarFormacionAcademica(String usuarioId, ActualizarFormacionAcademicaRequest curriculumRequest) {
+        Optional<CurriculumModelo> curriculumExiste = curriculumRepository.findByUsuarioId(usuarioId);
+        if (!curriculumExiste.isPresent()){
+            throw new CurriculumNotFoundException("No se ha encontrado un curriculum registrado para el usuario " + usuarioId);
+        }
+
+        CurriculumModelo curriculumFinal = curriculumExiste.get();
+
+        FormacionAcademica formacionAcademica = curriculumFinal.getEducacion().getFormacionesAcademicas().stream()
+                .filter(f -> f.getId().equals(curriculumRequest.getFormacionId()))
+                .findFirst()
+                .orElseThrow(() -> new CurriculumNotFoundException("Formación académica no encontrada"));
+
+        if (curriculumRequest.getAreaConocimiento() != null) {
+            formacionAcademica.setAreaConocimiento(curriculumRequest.getAreaConocimiento());
+        }
+        if (curriculumRequest.getProgramaAcademico() != null && !curriculumRequest.getProgramaAcademico().isBlank()) {
+            formacionAcademica.setProgramaAcademico(curriculumRequest.getProgramaAcademico());
+        }
+        if (curriculumRequest.getSemestresAprobados() != null) {
+            formacionAcademica.setSemestresAprobados(curriculumRequest.getSemestresAprobados());
+        }
+        if (curriculumRequest.getEstadoEstudio() != null) {
+            formacionAcademica.setEstadoEstudio(curriculumRequest.getEstadoEstudio());
+        }
+        if (curriculumRequest.getFechaTerminacionMaterias() != null) {
+            formacionAcademica.setFechaTerminacionMaterias(curriculumRequest.getFechaTerminacionMaterias());
+        }
+        if (curriculumRequest.getFechaGrado() != null) {
+            formacionAcademica.setFechaGrado(curriculumRequest.getFechaGrado());
+        }
+        if (curriculumRequest.getEstudioConvalidado() != null) {
+            formacionAcademica.setEstudioConvalidado(curriculumRequest.getEstudioConvalidado());
+        }
+        if (curriculumRequest.getFechaConvalidacion() != null) {
+            formacionAcademica.setFechaConvalidacion(curriculumRequest.getFechaConvalidacion());
+        }
+        if (curriculumRequest.getTarjetaProfesional() != null && !curriculumRequest.getTarjetaProfesional().isBlank()) {
+            formacionAcademica.setTarjetaProfesional(curriculumRequest.getTarjetaProfesional());
+        }
+        if (curriculumRequest.getEstudioExterior() != null) {
+            formacionAcademica.setEstudioExterior(curriculumRequest.getEstudioExterior());
+        }
+        if (curriculumRequest.getArchivoTarjetaProfesioal() != null && !curriculumRequest.getArchivoTarjetaProfesioal().isBlank()) {
+            formacionAcademica.setArchivoTarjetaProfesioal(curriculumRequest.getArchivoTarjetaProfesioal());
+        }
+        if (curriculumRequest.getVerificTarjetaProfesional() != null) {
+            formacionAcademica.setVerificTarjetaProfesional(curriculumRequest.getVerificTarjetaProfesional());
+        }
+        if (curriculumRequest.getArchivoEducacionFormal() != null && !curriculumRequest.getArchivoEducacionFormal().isBlank()) {
+            formacionAcademica.setArchivoEducacionFormal(curriculumRequest.getArchivoEducacionFormal());
+        }
+        if (curriculumRequest.getVerificEducacionFormal() != null) {
+            formacionAcademica.setVerificEducacionFormal(curriculumRequest.getVerificEducacionFormal());
+        }
+
+
+        curriculumRepository.save(curriculumFinal);
+    }
+
+    @Override
     public void registrarEducacionTrabajo(String usuarioId, RegistrarEducacionTrabajoRequest curriculumRequest) {
         Optional<CurriculumModelo> curriculumExiste = curriculumRepository.findByUsuarioId(usuarioId);
         if (!curriculumExiste.isPresent()){
@@ -287,6 +348,27 @@ public class CurriculumServiceImp implements ICurriculumService{
     }
 
     @Override
+    public void actualizarEducacionTrabajo(String usuarioId, ActualizarEducacionTrabajoRequest curriculumRequest) {
+        Optional<CurriculumModelo> curriculumExiste = curriculumRepository.findByUsuarioId(usuarioId);
+        if (!curriculumExiste.isPresent()){
+            throw new CurriculumNotFoundException("No se ha encontrado un curriculum registrado para el usuario " + usuarioId);
+        }
+
+        CurriculumModelo curriculumFinal = curriculumExiste.get();
+
+        EducacionTrabajo educacionTrabajo = curriculumFinal.getEducacion().getEducacionTrabajos().stream()
+                .filter(f -> f.getId().equals(curriculumRequest.getEducacionTrabajoId()))
+                .findFirst()
+                .orElseThrow(() -> new CurriculumNotFoundException("Formación académica no encontrada"));
+
+        if (curriculumRequest.getDiplomaActaCertificadoEstudio() != null && !curriculumRequest.getDiplomaActaCertificadoEstudio().isBlank()) {
+            educacionTrabajo.setDiplomaActaCertificadoEstudio(curriculumRequest.getDiplomaActaCertificadoEstudio());
+        }
+
+        curriculumRepository.save(curriculumFinal);
+    }
+
+    @Override
     public void registrarIdioma(String usuarioId, RegistrarIdiomaRequest curriculumRequest) {
         Optional<CurriculumModelo> curriculumExiste = curriculumRepository.findByUsuarioId(usuarioId);
         if (!curriculumExiste.isPresent()){
@@ -314,6 +396,27 @@ public class CurriculumServiceImp implements ICurriculumService{
                 .build();
 
         curriculumFinal.getEducacion().getIdiomas().add(idiomaFinal);
+
+        curriculumRepository.save(curriculumFinal);
+    }
+
+    @Override
+    public void actualizarIdioma(String usuarioId, ActualizarIdiomaRequest curriculumRequest) {
+        Optional<CurriculumModelo> curriculumExiste = curriculumRepository.findByUsuarioId(usuarioId);
+        if (!curriculumExiste.isPresent()){
+            throw new CurriculumNotFoundException("No se ha encontrado un curriculum registrado para el usuario " + usuarioId);
+        }
+
+        CurriculumModelo curriculumFinal = curriculumExiste.get();
+
+        Idioma idioma = curriculumFinal.getEducacion().getIdiomas().stream()
+                .filter(f -> f.getId().equals(curriculumRequest.getIdiomaId()))
+                .findFirst()
+                .orElseThrow(() -> new CurriculumNotFoundException("Formación académica no encontrada"));
+
+        if (curriculumRequest.getCertificado() != null && !curriculumRequest.getCertificado().isBlank()) {
+            idioma.setCertificado(curriculumRequest.getCertificado());
+        }
 
         curriculumRepository.save(curriculumFinal);
     }
@@ -359,6 +462,43 @@ public class CurriculumServiceImp implements ICurriculumService{
     }
 
     @Override
+    public void actualizarExperienciaLaboral(String usuarioId, ActualizarExperienciaLaboralRequest curriculumRequest) {
+        Optional<CurriculumModelo> curriculumExiste = curriculumRepository.findByUsuarioId(usuarioId);
+        if (!curriculumExiste.isPresent()){
+            throw new CurriculumNotFoundException("No se ha encontrado un curriculum registrado para el usuario " + usuarioId);
+        }
+
+        CurriculumModelo curriculumFinal = curriculumExiste.get();
+
+        ExperienciaLaboral experienciaLaboral = curriculumFinal.getExperienciasLaborales().stream()
+                .filter(f -> f.getId().equals(curriculumRequest.getExperienciaLaboralId()))
+                .findFirst()
+                .orElseThrow(() -> new CurriculumNotFoundException("Experiencia laboral no encontrada "));
+
+        if (curriculumRequest.getTelefono() != null && !curriculumRequest.getTelefono().isBlank()) {
+            experienciaLaboral.setTelefono(curriculumRequest.getTelefono());
+        }
+        if (curriculumRequest.getFechaRetiro() != null) {
+            experienciaLaboral.setFechaRetiro(curriculumRequest.getFechaRetiro());
+        }
+        if (curriculumRequest.getHorasPromedioMes() != null && curriculumRequest.getHorasPromedioMes() != 0) {
+            experienciaLaboral.setHorasPromedioMes(curriculumRequest.getHorasPromedioMes());
+        }
+        if (curriculumRequest.getMotivoRetiro() != null && !curriculumRequest.getMotivoRetiro().isBlank()) {
+            experienciaLaboral.setMotivoRetiro(curriculumRequest.getMotivoRetiro());
+        }
+        if (curriculumRequest.getCertificadoLaboral() != null && !curriculumRequest.getCertificadoLaboral().isBlank()) {
+            experienciaLaboral.setCertificadoLaboral(curriculumRequest.getCertificadoLaboral());
+        }
+        if (curriculumRequest.getDocumentoVerificado() != null) {
+            experienciaLaboral.setDocumentoVerificado(curriculumRequest.getDocumentoVerificado());
+        }
+
+
+        curriculumRepository.save(curriculumFinal);
+    }
+
+    @Override
     public void registrarExperienciaLaboralDocente(String usuarioId, RegistrarExperienciaLaboralDocenteRequest curriculumRequest) {
         Optional<CurriculumModelo> curriculumExiste = curriculumRepository.findByUsuarioId(usuarioId);
         if (!curriculumExiste.isPresent()) {
@@ -394,6 +534,47 @@ public class CurriculumServiceImp implements ICurriculumService{
                 .build();
 
         curriculumFinal.getExperienciasLaboralesDocente().add(experienciaLaboralDocente);
+
+        curriculumRepository.save(curriculumFinal);
+    }
+
+    @Override
+    public void actualizarExperienciaLaboralDocente(String usuarioId, ActualizarExperienciaLaboralDocenteRequest curriculumRequest) {
+        Optional<CurriculumModelo> curriculumExiste = curriculumRepository.findByUsuarioId(usuarioId);
+        if (!curriculumExiste.isPresent()){
+            throw new CurriculumNotFoundException("No se ha encontrado un curriculum registrado para el usuario " + usuarioId);
+        }
+
+        CurriculumModelo curriculumFinal = curriculumExiste.get();
+
+        ExperienciaLaboralDocente experienciaLaboralDocente = curriculumFinal.getExperienciasLaboralesDocente().stream()
+                .filter(f -> f.getId().equals(curriculumRequest.getExperienciaLaboralDocenteId()))
+                .findFirst()
+                .orElseThrow(() -> new CurriculumNotFoundException("Experiencia laboral de docente no encontrada "));
+
+
+        if (curriculumRequest.getFechaTerminacion() != null) {
+            experienciaLaboralDocente.setFechaTerminacion(curriculumRequest.getFechaTerminacion());
+        }
+        if (curriculumRequest.getHorasPromedioMes() != null && curriculumRequest.getHorasPromedioMes() != 0) {
+            experienciaLaboralDocente.setHorasPromedioMes(curriculumRequest.getHorasPromedioMes());
+        }
+        if (curriculumRequest.getMotivoRetiro() != null && !curriculumRequest.getMotivoRetiro().isBlank()) {
+            experienciaLaboralDocente.setMotivoRetiro(curriculumRequest.getMotivoRetiro());
+        }
+        if (curriculumRequest.getTelefono() != null && !curriculumRequest.getTelefono().isBlank()) {
+            experienciaLaboralDocente.setTelefono(curriculumRequest.getTelefono());
+        }
+        if (curriculumRequest.getMateriaImpartida() != null && !curriculumRequest.getMateriaImpartida().isBlank()) {
+            experienciaLaboralDocente.setMateriaImpartida(curriculumRequest.getMateriaImpartida());
+        }
+        if (curriculumRequest.getCertificadoLaboral() != null && !curriculumRequest.getCertificadoLaboral().isBlank()) {
+            experienciaLaboralDocente.setCertificadoLaboral(curriculumRequest.getCertificadoLaboral());
+        }
+        if (curriculumRequest.getDocumentoVerificado() != null) {
+            experienciaLaboralDocente.setDocumentoVerificado(curriculumRequest.getDocumentoVerificado());
+        }
+
 
         curriculumRepository.save(curriculumFinal);
     }
