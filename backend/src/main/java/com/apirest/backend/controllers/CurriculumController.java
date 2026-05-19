@@ -6,6 +6,10 @@ import com.apirest.backend.dtos.requests.curriculums.Educacion.RegistrarFormacio
 import com.apirest.backend.dtos.requests.curriculums.Educacion.RegistrarIdiomaRequest;
 import com.apirest.backend.dtos.requests.curriculums.ExperienciaLaboral.RegistrarExperienciaLaboralDocenteRequest;
 import com.apirest.backend.dtos.requests.curriculums.ExperienciaLaboral.RegistrarExperienciaLaboralRequest;
+import com.apirest.backend.dtos.requests.curriculums.GerenciaPublica.RegistrarParticipacionCorporacionEntidadRequest;
+import com.apirest.backend.dtos.requests.curriculums.GerenciaPublica.RegistrarParticipacionProyectoRequest;
+import com.apirest.backend.dtos.requests.curriculums.GerenciaPublica.RegistrarPremioReconocimientoRequest;
+import com.apirest.backend.dtos.requests.curriculums.GerenciaPublica.RegistrarPublicacionRequest;
 import com.apirest.backend.models.UsuarioModelo;
 import com.apirest.backend.services.ICurriculumService;
 import jakarta.validation.Valid;
@@ -87,6 +91,30 @@ public class CurriculumController {
     @PostMapping("/experienciaLaboral/docente")
     public ResponseEntity<Void> registrarExperienciaLaboralDocente(@AuthenticationPrincipal UsuarioModelo usuario, @Valid @RequestBody RegistrarExperienciaLaboralDocenteRequest curriculumRequest) {
         curriculumService.registrarExperienciaLaboralDocente(usuario.getId(), curriculumRequest);
+        return new ResponseEntity<>(HttpStatus.CREATED);
+    }
+
+    @PostMapping("/gerenciaPublica/publicacion")
+    public ResponseEntity<Void> registrarPublicacion(@AuthenticationPrincipal UsuarioModelo usuario, @Valid @RequestBody RegistrarPublicacionRequest curriculumRequest) {
+        curriculumService.registrarPublicacion(usuario.getId(), curriculumRequest);
+        return new ResponseEntity<>(HttpStatus.CREATED);
+    }
+
+    @PostMapping("/gerenciaPublica/premioReconocimiento")
+    public ResponseEntity<Void> registrarPremioReconocimiento(@AuthenticationPrincipal UsuarioModelo usuario, @Valid @RequestBody RegistrarPremioReconocimientoRequest curriculumRequest) {
+        curriculumService.registrarPremioReconocimiento(usuario.getId(), curriculumRequest);
+        return new ResponseEntity<>(HttpStatus.CREATED);
+    }
+
+    @PostMapping("/gerenciaPublica/participacionProyecto")
+    public ResponseEntity<Void> registrarParticipacionProyecto(@AuthenticationPrincipal UsuarioModelo usuario, @Valid @RequestBody RegistrarParticipacionProyectoRequest curriculumRequest) {
+        curriculumService.registrarParticipacionProyecto(usuario.getId(), curriculumRequest);
+        return new ResponseEntity<>(HttpStatus.CREATED);
+    }
+
+    @PostMapping("/gerenciaPublica/participacionCorporacionEntidad")
+    public ResponseEntity<Void> registrarParticipacionCorporacionEntidad(@AuthenticationPrincipal UsuarioModelo usuario, @Valid @RequestBody RegistrarParticipacionCorporacionEntidadRequest curriculumRequest) {
+        curriculumService.registrarParticipacionCorporacionEntidad(usuario.getId(), curriculumRequest);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 

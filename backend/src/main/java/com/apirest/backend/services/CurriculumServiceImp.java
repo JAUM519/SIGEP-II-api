@@ -7,6 +7,10 @@ import com.apirest.backend.dtos.requests.curriculums.Educacion.RegistrarFormacio
 import com.apirest.backend.dtos.requests.curriculums.Educacion.RegistrarIdiomaRequest;
 import com.apirest.backend.dtos.requests.curriculums.ExperienciaLaboral.RegistrarExperienciaLaboralDocenteRequest;
 import com.apirest.backend.dtos.requests.curriculums.ExperienciaLaboral.RegistrarExperienciaLaboralRequest;
+import com.apirest.backend.dtos.requests.curriculums.GerenciaPublica.RegistrarParticipacionCorporacionEntidadRequest;
+import com.apirest.backend.dtos.requests.curriculums.GerenciaPublica.RegistrarParticipacionProyectoRequest;
+import com.apirest.backend.dtos.requests.curriculums.GerenciaPublica.RegistrarPremioReconocimientoRequest;
+import com.apirest.backend.dtos.requests.curriculums.GerenciaPublica.RegistrarPublicacionRequest;
 import com.apirest.backend.exceptions.CurriculumAlreadyExistsException;
 import com.apirest.backend.exceptions.CurriculumNotFoundException;
 import com.apirest.backend.models.curriculum.*;
@@ -391,6 +395,121 @@ public class CurriculumServiceImp implements ICurriculumService{
 
         curriculumFinal.getExperienciasLaboralesDocente().add(experienciaLaboralDocente);
 
+        curriculumRepository.save(curriculumFinal);
+    }
+
+    @Override
+    public void registrarPublicacion(String usuarioId, RegistrarPublicacionRequest curriculumRequest) {
+        Optional<CurriculumModelo> curriculumExiste = curriculumRepository.findByUsuarioId(usuarioId);
+        if (!curriculumExiste.isPresent()) {
+            throw new CurriculumNotFoundException("No se ha encontrado un curriculum registrado para el usuario " + usuarioId);
+        }
+        CurriculumModelo curriculumFinal = curriculumExiste.get();
+
+        if (curriculumFinal.getGerenciaPublica() == null) {
+            curriculumFinal.setGerenciaPublica(new GerenciaPublica());
+        }
+
+        if (curriculumFinal.getGerenciaPublica().getPublicaciones() == null) {
+            curriculumFinal.getGerenciaPublica().setPublicaciones(new ArrayList<>());
+        }
+
+        Publicacion publicacion = Publicacion.builder()
+                .articulo(curriculumRequest.getArticulo())
+                .nombreArticulo(curriculumRequest.getNombreArticulo())
+                .libroResultadoInvestigacion(curriculumRequest.getLibroResultadoInvestigacion())
+                .nombreLibroRevista(curriculumRequest.getNombreLibroRevista())
+                .tiposProduccionBibliografica(curriculumRequest.getTiposProduccionBibliografica())
+                .nombrePublicacion(curriculumRequest.getNombrePublicacion())
+                .build();
+
+        curriculumFinal.getGerenciaPublica().getPublicaciones().add(publicacion);
+        curriculumRepository.save(curriculumFinal);
+    }
+
+    @Override
+    public void registrarPremioReconocimiento(String usuarioId, RegistrarPremioReconocimientoRequest curriculumRequest) {
+        Optional<CurriculumModelo> curriculumExiste = curriculumRepository.findByUsuarioId(usuarioId);
+        if (!curriculumExiste.isPresent()) {
+            throw new CurriculumNotFoundException("No se ha encontrado un curriculum registrado para el usuario " + usuarioId);
+        }
+        CurriculumModelo curriculumFinal = curriculumExiste.get();
+
+        if (curriculumFinal.getGerenciaPublica() == null) {
+            curriculumFinal.setGerenciaPublica(new GerenciaPublica());
+        }
+
+        if (curriculumFinal.getGerenciaPublica().getPremiosReconocimientos() == null) {
+            curriculumFinal.getGerenciaPublica().setPremiosReconocimientos(new ArrayList<>());
+        }
+
+        PremioReconocimiento premioReconocimiento = PremioReconocimiento.builder()
+                .tipo(curriculumRequest.getTipo())
+                .nombreEntidadOrganizacion(curriculumRequest.getNombreEntidadOrganizacion())
+                .fecha(curriculumRequest.getFecha())
+                .pais(curriculumRequest.getPais())
+                .departamento(curriculumRequest.getDepartamento())
+                .municipio(curriculumRequest.getMunicipio())
+                .build();
+
+        curriculumFinal.getGerenciaPublica().getPremiosReconocimientos().add(premioReconocimiento);
+        curriculumRepository.save(curriculumFinal);
+    }
+
+    @Override
+    public void registrarParticipacionProyecto(String usuarioId, RegistrarParticipacionProyectoRequest curriculumRequest) {
+        Optional<CurriculumModelo> curriculumExiste = curriculumRepository.findByUsuarioId(usuarioId);
+        if (!curriculumExiste.isPresent()) {
+            throw new CurriculumNotFoundException("No se ha encontrado un curriculum registrado para el usuario " + usuarioId);
+        }
+        CurriculumModelo curriculumFinal = curriculumExiste.get();
+
+        if (curriculumFinal.getGerenciaPublica() == null) {
+            curriculumFinal.setGerenciaPublica(new GerenciaPublica());
+        }
+
+        if (curriculumFinal.getGerenciaPublica().getParticipacionesPoryectos() == null) {
+            curriculumFinal.getGerenciaPublica().setParticipacionesPoryectos(new ArrayList<>());
+        }
+
+        ParticipacionProyecto participacionProyecto = ParticipacionProyecto.builder()
+                .nombre(curriculumRequest.getNombre())
+                .rolDesempeñado(curriculumRequest.getRolDesempeñado())
+                .nombreEntidadOrganizacion(curriculumRequest.getNombreEntidadOrganizacion())
+                .pais(curriculumRequest.getPais())
+                .departamento(curriculumRequest.getDepartamento())
+                .municipio(curriculumRequest.getMunicipio())
+                .fechaInicio(curriculumRequest.getFechaInicio())
+                .fechaTerminacion(curriculumRequest.getFechaTerminacion())
+                .build();
+
+        curriculumFinal.getGerenciaPublica().getParticipacionesPoryectos().add(participacionProyecto);
+        curriculumRepository.save(curriculumFinal);
+    }
+
+    @Override
+    public void registrarParticipacionCorporacionEntidad(String usuarioId, RegistrarParticipacionCorporacionEntidadRequest curriculumRequest) {
+        Optional<CurriculumModelo> curriculumExiste = curriculumRepository.findByUsuarioId(usuarioId);
+        if (!curriculumExiste.isPresent()) {
+            throw new CurriculumNotFoundException("No se ha encontrado un curriculum registrado para el usuario " + usuarioId);
+        }
+        CurriculumModelo curriculumFinal = curriculumExiste.get();
+
+        if (curriculumFinal.getGerenciaPublica() == null) {
+            curriculumFinal.setGerenciaPublica(new GerenciaPublica());
+        }
+
+        if (curriculumFinal.getGerenciaPublica().getParticipacionesCorporacionesEntidades() == null) {
+            curriculumFinal.getGerenciaPublica().setParticipacionesCorporacionesEntidades(new ArrayList<>());
+        }
+
+        ParticipacionCorporacionEntidad participacionCorporacionEntidad = ParticipacionCorporacionEntidad.builder()
+                .nombreCorporacion(curriculumRequest.getNombreCorporacion())
+                .nombreRazonSocialInstitucion(curriculumRequest.getNombreRazonSocialInstitucion())
+                .nombreEntidadOrganizacion(curriculumRequest.getNombreEntidadOrganizacion())
+                .build();
+
+        curriculumFinal.getGerenciaPublica().getParticipacionesCorporacionesEntidades().add(participacionCorporacionEntidad);
         curriculumRepository.save(curriculumFinal);
     }
 

@@ -1,12 +1,14 @@
 package com.apirest.backend.models.curriculum.sections;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 
 import java.time.Instant;
 
+@Builder
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
