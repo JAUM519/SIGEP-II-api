@@ -5,11 +5,14 @@ import com.apirest.backend.dtos.requests.curriculums.DatosPersonales.*;
 import com.apirest.backend.dtos.requests.curriculums.Educacion.RegistrarEducacionTrabajoRequest;
 import com.apirest.backend.dtos.requests.curriculums.Educacion.RegistrarFormacionAcademicaRequest;
 import com.apirest.backend.dtos.requests.curriculums.Educacion.RegistrarIdiomaRequest;
+import com.apirest.backend.dtos.requests.curriculums.ExperienciaLaboral.RegistrarExperienciaLaboralDocenteRequest;
+import com.apirest.backend.dtos.requests.curriculums.ExperienciaLaboral.RegistrarExperienciaLaboralRequest;
 import com.apirest.backend.exceptions.CurriculumAlreadyExistsException;
 import com.apirest.backend.exceptions.CurriculumNotFoundException;
 import com.apirest.backend.models.curriculum.CurriculumModelo;
 import com.apirest.backend.models.curriculum.DatosPersonales;
 import com.apirest.backend.models.curriculum.Educacion;
+import com.apirest.backend.models.curriculum.ExperienciaLaboral;
 import com.apirest.backend.models.curriculum.sections.*;
 import com.apirest.backend.repositories.ICurriculumRepository;
 import org.springframework.stereotype.Service;
@@ -312,6 +315,51 @@ public class CurriculumServiceImp implements ICurriculumService{
         curriculumFinal.getEducacion().getIdiomas().add(idiomaFinal);
 
         curriculumRepository.save(curriculumFinal);
+    }
+
+    @Override
+    public void registrarExperienciaLaboral(String usuarioId, RegistrarExperienciaLaboralRequest curriculumRequest) {
+        Optional<CurriculumModelo> curriculumExiste = curriculumRepository.findByUsuarioId(usuarioId);
+        if (!curriculumExiste.isPresent()){
+            throw new CurriculumNotFoundException("No se ha encontrado un curriculum registrado para el usuario " + usuarioId);
+        }
+
+        CurriculumModelo curriculumFinal = curriculumExiste.get();
+
+        if (curriculumFinal.getExperienciasLaborales() == null) {
+            curriculumFinal.setExperienciasLaborales(new ArrayList<>());
+        }
+
+        ExperienciaLaboral experienciaLaboral = ExperienciaLaboral.builder()
+                .tipoEntidad(curriculumRequest.getTipoEntidad())
+                .nombreEntidad(curriculumRequest.getNombreEntidad())
+                .pais(curriculumRequest.getPais())
+                .departamento(curriculumRequest.getDepartamento())
+                .municipio(curriculumRequest.getMunicipio())
+                .direccionEntidad(curriculumRequest.getDireccionEntidad())
+                .dependencia(curriculumRequest.getDependencia())
+                .nivelJerarquiaEmpleo(curriculumRequest.getNivelJerarquiaEmpleo())
+                .cargo(curriculumRequest.getCargo())
+                .telefono(curriculumRequest.getTelefono())
+                .trabajoActual(curriculumRequest.getTrabajoActual())
+                .fechaIngreso(curriculumRequest.getFechaIngreso())
+                .fechaRetiro(curriculumRequest.getFechaRetiro())
+                .jornadaLaboral(curriculumRequest.getJornadaLaboral())
+                .horasPromedioMes(curriculumRequest.getHorasPromedioMes())
+                .tiempoExperiencia(curriculumRequest.getTiempoExperiencia())
+                .motivoRetiro(curriculumRequest.getMotivoRetiro())
+                .certificadoLaboral(curriculumRequest.getCertificadoLaboral())
+                .documentoVerificado(curriculumRequest.getDocumentoVerificado())
+                .build();
+
+        curriculumFinal.getExperienciasLaborales().add(experienciaLaboral);
+
+        curriculumRepository.save(curriculumFinal);
+    }
+
+    @Override
+    public void registrarExperienciaLaboralDocente(String usuarioId, RegistrarExperienciaLaboralDocenteRequest curriculumRequest) {
+
     }
 
 
