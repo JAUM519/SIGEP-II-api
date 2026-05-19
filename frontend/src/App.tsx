@@ -11,6 +11,7 @@ import DashboardPage       from "./pages/dashboard/DashboardPage";
 import DatosPersonalesPage from "./pages/curriculum/DatosPersonalesPage";
 import EducacionPage       from "./pages/curriculum/EducacionPage";
 import ExperienciaPage     from "./pages/curriculum/ExperienciaPage";
+import GerenciaPublicaPage from "./pages/curriculum/GerenciaPublicaPage";
 import CreateUserPage      from "./pages/usuarios/CreateUserPage";
 import DisableUserPage     from "./pages/usuarios/DisableUserPage";
 import ChangePasswordPage  from "./pages/usuarios/ChangePasswordPage";
@@ -29,6 +30,7 @@ const App: React.FC = () => (
           <Route path="/curriculum/datos-personales" element={<ProtectedRoute><DatosPersonalesPage /></ProtectedRoute>} />
           <Route path="/curriculum/educacion" element={<ProtectedRoute><EducacionPage /></ProtectedRoute>} />
           <Route path="/curriculum/experiencia" element={<ProtectedRoute><ExperienciaPage /></ProtectedRoute>} />
+          <Route path="/curriculum/gerencia-publica" element={<ProtectedRoute><GerenciaPublicaPage /></ProtectedRoute>} />
           <Route path="/usuarios/crear" element={<ProtectedRoute allowedRoles={[RolUsuario.JefeDeTalentoHumano]}><CreateUserPage /></ProtectedRoute>} />
           <Route path="/usuarios/inhabilitar" element={<ProtectedRoute allowedRoles={[RolUsuario.JefeDeTalentoHumano]}><DisableUserPage /></ProtectedRoute>} />
           <Route path="/perfil/cambiar-contrasena" element={<ProtectedRoute><ChangePasswordPage /></ProtectedRoute>} />

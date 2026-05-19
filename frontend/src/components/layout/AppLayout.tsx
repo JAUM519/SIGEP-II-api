@@ -1,6 +1,6 @@
 import React from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "../../hooks/useAuth";
 import { RolUsuario, TipoIdentificacionLabels } from "../../types";
 
 interface NavItem {
@@ -33,6 +33,13 @@ const IconExperiencia = () => (
     <svg className="nav-icon" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
       <rect x="2" y="7" width="20" height="14" rx="2" />
       <path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2" />
+    </svg>
+);
+
+const IconGerenciaPublica = () => (
+    <svg className="nav-icon" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+      <path d="M3 21h18M5 21V9l7-4 7 4v12M9 21v-6h6v6" />
+      <path d="M9 10h.01M12 10h.01M15 10h.01" />
     </svg>
 );
 
@@ -70,6 +77,7 @@ const mainNavItems: NavItem[] = [
   { label: "Datos Personales",  path: "/curriculum/datos-personales", icon: <IconHojaVida /> },
   { label: "Educación",         path: "/curriculum/educacion",    icon: <IconEducacion /> },
   { label: "Experiencia Laboral", path: "/curriculum/experiencia", icon: <IconExperiencia /> },
+  { label: "Gerencia Pública", path: "/curriculum/gerencia-publica", icon: <IconGerenciaPublica /> },
 ];
 
 const managementNavItems: NavItem[] = [

@@ -1,6 +1,7 @@
-import React, { createContext, useCallback, useContext, useState } from "react";
+import React, { useCallback, useState } from "react";
 import type { AuthUser, LoginResponse } from "../types";
 import { RolUsuario } from "../types";
+import { AuthContext } from "./authContextValue";
 
 interface JwtPayload {
   sub?: string;
@@ -8,16 +9,6 @@ interface JwtPayload {
   numeroIdentificacion?: string;
   exp?: number;
 }
-
-interface AuthContextType {
-  user: AuthUser | null;
-  login: (loginResponse: LoginResponse) => void;
-  logout: () => void;
-  isAuthenticated: boolean;
-  hasRole: (roles: RolUsuario[]) => boolean;
-}
-
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const STORAGE_KEY = "sigep_user";
 
@@ -97,17 +88,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const hasRole = useCallback((roles: RolUsuario[]) => {
     if (!user?.rol) return false;
     return roles.includes(user.rol);
-  }, [user?.rol]);
+  }, [user]);
 
   return (
     <AuthContext.Provider value={{ user, login, logout, isAuthenticated: !!user, hasRole }}>
       {children}
     </AuthContext.Provider>
   );
-};
-
-export const useAuth = () => {
-  const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error("useAuth must be used within AuthProvider");
-  return ctx;
 };

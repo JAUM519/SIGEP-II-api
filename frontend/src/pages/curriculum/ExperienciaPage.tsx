@@ -1,39 +1,153 @@
 import React, { useState } from "react";
 import AppLayout from "../../components/layout/AppLayout";
-import type { ExperienciaLaboral, ExperienciaLaboralDocente } from "../../types";
+import { curriculumService, getApiError, toInstant } from "../../services/api";
+import {
+  AreaConocimiento,
+  AreaConocimientoLabels,
+  JornadaLaboral,
+  JornadaLaboralLabels,
+  NivelAcademico,
+  NivelAcademicoLabels,
+  NivelJerarquicoEmpleo,
+  NivelJerarquicoEmpleoLabels,
+  TipoEntidad,
+  TipoEntidadLabels,
+  TipoInstitucion,
+  TipoInstitucionLabels,
+  TipoZona,
+  TipoZonaLabels,
+  type ExperienciaLaboral,
+  type ExperienciaLaboralDocente,
+} from "../../types";
 
 const ExperienciaPage: React.FC = () => {
   const [tab, setTab] = useState(0);
   const [saved, setSaved] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
 
   const emptyExp = (): ExperienciaLaboral => ({
-    tipoEntidad: "", nombreEntidad: "", pais: "Colombia",
-    departamento: "", municipio: "", direccionEntidad: "",
-    dependencia: "", nivelJerarquiaEmpleo: "", cargo: "",
-    telefono: "", trabajoActual: "No", fechaIngreso: "", jornadaLaboral: "Completa",
-    horasPromedioMes: 0, tiempoExperiencia: 0,
+    tipoEntidad: TipoEntidad.Publica,
+    nombreEntidad: "",
+    pais: "Colombia",
+    departamento: "",
+    municipio: "",
+    direccionEntidad: "",
+    dependencia: "",
+    nivelJerarquiaEmpleo: NivelJerarquicoEmpleo.Profesional,
+    cargo: "",
+    telefono: "",
+    trabajoActual: false,
+    fechaIngreso: "",
+    fechaRetiro: "",
+    jornadaLaboral: JornadaLaboral.TiempoCompleto,
+    horasPromedioMes: 0,
+    tiempoExperiencia: 1,
+    motivoRetiro: "",
+    certificadoLaboral: "",
+    documentoVerificado: false,
   });
 
   const emptyDocente = (): ExperienciaLaboralDocente => ({
-    tipoInstitucion: "", nombreInstitucion: "", pais: "Colombia",
-    departamento: "", municipio: "", nivelAcademico: "",
-    areaConocimiento: "", tipoZona: "Urbana", trabajoActual: "No",
-    fechaIngreso: "", jornadaLaboral: "Completa", horasPromedioMes: 0,
-    materiaImpartida: "", tiempoExperiencia: 0,
+    tipoInstitucion: TipoInstitucion.Publica,
+    nombreInstitucion: "",
+    pais: "Colombia",
+    departamento: "",
+    municipio: "",
+    nivelAcademico: NivelAcademico.Pregrado,
+    areaConocimiento: AreaConocimiento.CienciasEducacion,
+    tipoZona: TipoZona.Urbana,
+    trabajoActual: false,
+    fechaIngreso: "",
+    fechaTerminacion: "",
+    jornadaLaboral: JornadaLaboral.TiempoCompleto,
+    horasPromedioMes: 0,
+    motivoRetiro: "",
+    telefono: "",
+    materiaImpartida: "",
+    tiempoExperiencia: 1,
+    certificadoLaboral: "",
+    documentoVerificado: false,
   });
 
   const [exps, setExps] = useState<ExperienciaLaboral[]>([emptyExp()]);
   const [docentes, setDocentes] = useState<ExperienciaLaboralDocente[]>([]);
 
-  const handleSave = (e: React.FormEvent) => {
-    e.preventDefault();
+  const updateExp = (i: number, field: keyof ExperienciaLaboral, value: string | boolean | number | undefined) => {
+    setExps(prev => prev.map((item, idx) => idx === i ? { ...item, [field]: value } : item));
+  };
+
+  const updateDocente = (i: number, field: keyof ExperienciaLaboralDocente, value: string | boolean | number | undefined) => {
+    setDocentes(prev => prev.map((item, idx) => idx === i ? { ...item, [field]: value } : item));
+  };
+
+  const showSuccess = () => {
     setSaved(true);
     setTimeout(() => setSaved(false), 3000);
   };
 
-  const tiposEntidad = ["Entidad Pública", "Empresa Privada", "ONG", "Entidad Internacional", "Otro"];
-  const nivelesJerarquia = ["Directivo", "Asesor", "Profesional", "Técnico", "Asistencial", "Operativo"];
-  const jornadasLaborales = ["Completa", "Medio tiempo", "Por horas", "Por turnos"];
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+    setError("");
+    setSaved(false);
+
+    try {
+      if (tab === 0) {
+        await Promise.all(exps.map(exp => curriculumService.registrarExperienciaLaboral({
+          tipoEntidad: exp.tipoEntidad as TipoEntidad,
+          nombreEntidad: exp.nombreEntidad.trim(),
+          pais: exp.pais.trim(),
+          departamento: exp.departamento.trim(),
+          municipio: exp.municipio.trim(),
+          direccionEntidad: exp.direccionEntidad.trim(),
+          dependencia: exp.dependencia.trim(),
+          nivelJerarquiaEmpleo: exp.nivelJerarquiaEmpleo as NivelJerarquicoEmpleo,
+          cargo: exp.cargo.trim(),
+          telefono: exp.telefono?.trim() || undefined,
+          trabajoActual: exp.trabajoActual,
+          fechaIngreso: toInstant(exp.fechaIngreso) ?? "",
+          fechaRetiro: exp.trabajoActual ? undefined : toInstant(exp.fechaRetiro),
+          jornadaLaboral: exp.jornadaLaboral as JornadaLaboral,
+          horasPromedioMes: exp.horasPromedioMes,
+          tiempoExperiencia: exp.tiempoExperiencia,
+          motivoRetiro: exp.trabajoActual ? undefined : exp.motivoRetiro?.trim() || undefined,
+          certificadoLaboral: exp.certificadoLaboral?.trim() || undefined,
+          documentoVerificado: exp.documentoVerificado,
+        })));
+      }
+
+      if (tab === 1) {
+        await Promise.all(docentes.map(doc => curriculumService.registrarExperienciaLaboralDocente({
+          tipoInstitucion: doc.tipoInstitucion as TipoInstitucion,
+          nombreInstitucion: doc.nombreInstitucion.trim(),
+          pais: doc.pais.trim(),
+          departamento: doc.departamento.trim(),
+          municipio: doc.municipio.trim(),
+          nivelAcademico: doc.nivelAcademico as NivelAcademico,
+          areaConocimiento: doc.areaConocimiento as AreaConocimiento,
+          tipoZona: doc.tipoZona as TipoZona,
+          trabajoActual: doc.trabajoActual,
+          fechaIngreso: toInstant(doc.fechaIngreso) ?? "",
+          fechaTerminacion: doc.trabajoActual ? undefined : toInstant(doc.fechaTerminacion),
+          jornadaLaboral: doc.jornadaLaboral as JornadaLaboral,
+          horasPromedioMes: doc.horasPromedioMes,
+          motivoRetiro: doc.trabajoActual ? undefined : doc.motivoRetiro?.trim() || undefined,
+          telefono: doc.telefono?.trim() || undefined,
+          materiaImpartida: doc.materiaImpartida?.trim() || undefined,
+          tiempoExperiencia: doc.tiempoExperiencia,
+          certificadoLaboral: doc.certificadoLaboral?.trim() || undefined,
+          documentoVerificado: doc.documentoVerificado,
+        })));
+      }
+
+      showSuccess();
+    } catch (err) {
+      setError(getApiError(err));
+    } finally {
+      setSaving(false);
+    }
+  };
 
   return (
     <AppLayout title="Experiencia Laboral">
@@ -48,14 +162,19 @@ const ExperienciaPage: React.FC = () => {
         </div>
       )}
 
+      {error && (
+        <div className="alert alert-danger animate-in" style={{ marginBottom: 20 }}>
+          {error}
+        </div>
+      )}
+
       <div className="tabs animate-in">
         {["Experiencia General", "Experiencia Docente"].map((t, i) => (
-          <button key={t} className={`tab ${tab === i ? "active" : ""}`} onClick={() => setTab(i)}>{t}</button>
+          <button key={t} type="button" className={`tab ${tab === i ? "active" : ""}`} onClick={() => setTab(i)}>{t}</button>
         ))}
       </div>
 
       <form onSubmit={handleSave}>
-        {/* ── Experiencia General ── */}
         {tab === 0 && (
           <div className="animate-in">
             {exps.map((exp, i) => (
@@ -64,8 +183,7 @@ const ExperienciaPage: React.FC = () => {
                   <div className="section-icon">💼</div>
                   <h3>Empleo #{i + 1}{exp.cargo ? ` — ${exp.cargo}` : ""}</h3>
                   {exps.length > 1 && (
-                    <button type="button" className="btn btn-danger btn-sm" style={{ marginLeft: "auto" }}
-                      onClick={() => setExps(p => p.filter((_, idx) => idx !== i))}>
+                    <button type="button" className="btn btn-danger btn-sm" style={{ marginLeft: "auto" }} onClick={() => setExps(p => p.filter((_, idx) => idx !== i))}>
                       Eliminar
                     </button>
                   )}
@@ -74,117 +192,111 @@ const ExperienciaPage: React.FC = () => {
                   <div className="form-grid cols-3">
                     <div className="form-group">
                       <label className="form-label">Tipo de entidad <span className="required">*</span></label>
-                      <select className="form-select" value={exp.tipoEntidad}
-                        onChange={e => setExps(p => p.map((x, idx) => idx === i ? { ...x, tipoEntidad: e.target.value } : x))}>
-                        <option value="">Seleccione...</option>
-                        {tiposEntidad.map(t => <option key={t} value={t}>{t}</option>)}
+                      <select className="form-select" required value={exp.tipoEntidad} onChange={e => updateExp(i, "tipoEntidad", e.target.value)}>
+                        {Object.entries(TipoEntidadLabels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
                       </select>
                     </div>
+
                     <div className="form-group span-2">
                       <label className="form-label">Nombre de la entidad / empresa <span className="required">*</span></label>
-                      <input className="form-input" value={exp.nombreEntidad}
-                        onChange={e => setExps(p => p.map((x, idx) => idx === i ? { ...x, nombreEntidad: e.target.value } : x))}
-                        placeholder="Ej: Ministerio de Hacienda" />
+                      <input className="form-input" required value={exp.nombreEntidad} onChange={e => updateExp(i, "nombreEntidad", e.target.value)} placeholder="Ej: Ministerio de Hacienda" />
                     </div>
 
                     <div className="form-group">
-                      <label className="form-label">País</label>
-                      <input className="form-input" value={exp.pais}
-                        onChange={e => setExps(p => p.map((x, idx) => idx === i ? { ...x, pais: e.target.value } : x))} />
+                      <label className="form-label">País <span className="required">*</span></label>
+                      <input className="form-input" required value={exp.pais} onChange={e => updateExp(i, "pais", e.target.value)} />
                     </div>
+
                     <div className="form-group">
-                      <label className="form-label">Departamento</label>
-                      <input className="form-input" value={exp.departamento}
-                        onChange={e => setExps(p => p.map((x, idx) => idx === i ? { ...x, departamento: e.target.value } : x))}
-                        placeholder="Ej: Bogotá D.C." />
+                      <label className="form-label">Departamento <span className="required">*</span></label>
+                      <input className="form-input" required value={exp.departamento} onChange={e => updateExp(i, "departamento", e.target.value)} placeholder="Ej: Bogotá D.C." />
                     </div>
+
                     <div className="form-group">
-                      <label className="form-label">Municipio</label>
-                      <input className="form-input" value={exp.municipio}
-                        onChange={e => setExps(p => p.map((x, idx) => idx === i ? { ...x, municipio: e.target.value } : x))}
-                        placeholder="Ej: Bogotá" />
+                      <label className="form-label">Municipio <span className="required">*</span></label>
+                      <input className="form-input" required value={exp.municipio} onChange={e => updateExp(i, "municipio", e.target.value)} placeholder="Ej: Bogotá" />
+                    </div>
+
+                    <div className="form-group span-2">
+                      <label className="form-label">Dirección entidad <span className="required">*</span></label>
+                      <input className="form-input" required value={exp.direccionEntidad} onChange={e => updateExp(i, "direccionEntidad", e.target.value)} placeholder="Ej: Calle 26 # 13-19" />
+                    </div>
+
+                    <div className="form-group">
+                      <label className="form-label">Teléfono entidad</label>
+                      <input className="form-input" value={exp.telefono ?? ""} onChange={e => updateExp(i, "telefono", e.target.value)} placeholder="Ej: 6012345678" />
                     </div>
 
                     <div className="form-group">
                       <label className="form-label">Cargo <span className="required">*</span></label>
-                      <input className="form-input" value={exp.cargo}
-                        onChange={e => setExps(p => p.map((x, idx) => idx === i ? { ...x, cargo: e.target.value } : x))}
-                        placeholder="Ej: Analista de Sistemas" />
+                      <input className="form-input" required value={exp.cargo} onChange={e => updateExp(i, "cargo", e.target.value)} placeholder="Ej: Analista de Sistemas" />
                     </div>
+
                     <div className="form-group">
-                      <label className="form-label">Nivel jerárquico</label>
-                      <select className="form-select" value={exp.nivelJerarquiaEmpleo}
-                        onChange={e => setExps(p => p.map((x, idx) => idx === i ? { ...x, nivelJerarquiaEmpleo: e.target.value } : x))}>
-                        <option value="">Seleccione...</option>
-                        {nivelesJerarquia.map(n => <option key={n} value={n}>{n}</option>)}
+                      <label className="form-label">Nivel jerárquico <span className="required">*</span></label>
+                      <select className="form-select" required value={exp.nivelJerarquiaEmpleo} onChange={e => updateExp(i, "nivelJerarquiaEmpleo", e.target.value)}>
+                        {Object.entries(NivelJerarquicoEmpleoLabels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
                       </select>
                     </div>
+
                     <div className="form-group">
-                      <label className="form-label">Dependencia</label>
-                      <input className="form-input" value={exp.dependencia}
-                        onChange={e => setExps(p => p.map((x, idx) => idx === i ? { ...x, dependencia: e.target.value } : x))}
-                        placeholder="Ej: Dirección de TI" />
+                      <label className="form-label">Dependencia <span className="required">*</span></label>
+                      <input className="form-input" required value={exp.dependencia} onChange={e => updateExp(i, "dependencia", e.target.value)} placeholder="Ej: Dirección de TI" />
                     </div>
 
                     <div className="form-group">
                       <label className="form-label">Fecha de ingreso <span className="required">*</span></label>
-                      <input type="date" className="form-input" value={exp.fechaIngreso}
-                        onChange={e => setExps(p => p.map((x, idx) => idx === i ? { ...x, fechaIngreso: e.target.value } : x))} />
-                    </div>
-                    <div className="form-group">
-                      <label className="form-label">Fecha de retiro</label>
-                      <input type="date" className="form-input" value={exp.fechaRetiro ?? ""}
-                        onChange={e => setExps(p => p.map((x, idx) => idx === i ? { ...x, fechaRetiro: e.target.value } : x))} />
-                    </div>
-                    <div className="form-group">
-                      <label className="form-label">¿Trabajo actual?</label>
-                      <select className="form-select" value={exp.trabajoActual}
-                        onChange={e => setExps(p => p.map((x, idx) => idx === i ? { ...x, trabajoActual: e.target.value } : x))}>
-                        <option value="No">No</option>
-                        <option value="Si">Sí</option>
-                      </select>
+                      <input type="date" className="form-input" required value={exp.fechaIngreso} onChange={e => updateExp(i, "fechaIngreso", e.target.value)} />
                     </div>
 
                     <div className="form-group">
-                      <label className="form-label">Jornada laboral</label>
-                      <select className="form-select" value={exp.jornadaLaboral}
-                        onChange={e => setExps(p => p.map((x, idx) => idx === i ? { ...x, jornadaLaboral: e.target.value } : x))}>
-                        {jornadasLaborales.map(j => <option key={j} value={j}>{j}</option>)}
+                      <label className="form-label">¿Trabajo actual? <span className="required">*</span></label>
+                      <select className="form-select" value={String(exp.trabajoActual)} onChange={e => updateExp(i, "trabajoActual", e.target.value === "true")}>
+                        <option value="false">No</option>
+                        <option value="true">Sí</option>
                       </select>
                     </div>
+
+                    {!exp.trabajoActual && (
+                      <div className="form-group">
+                        <label className="form-label">Fecha de retiro</label>
+                        <input type="date" className="form-input" value={exp.fechaRetiro ?? ""} onChange={e => updateExp(i, "fechaRetiro", e.target.value)} />
+                      </div>
+                    )}
+
+                    <div className="form-group">
+                      <label className="form-label">Jornada laboral <span className="required">*</span></label>
+                      <select className="form-select" required value={exp.jornadaLaboral} onChange={e => updateExp(i, "jornadaLaboral", e.target.value)}>
+                        {Object.entries(JornadaLaboralLabels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+                      </select>
+                    </div>
+
                     <div className="form-group">
                       <label className="form-label">Horas promedio / mes</label>
-                      <input type="number" className="form-input" value={exp.horasPromedioMes}
-                        onChange={e => setExps(p => p.map((x, idx) => idx === i ? { ...x, horasPromedioMes: +e.target.value } : x))}
-                        min={0} max={300} />
-                    </div>
-                    <div className="form-group">
-                      <label className="form-label">Teléfono entidad</label>
-                      <input className="form-input" value={exp.telefono}
-                        onChange={e => setExps(p => p.map((x, idx) => idx === i ? { ...x, telefono: e.target.value } : x))}
-                        placeholder="Ej: 6012345678" />
+                      <input type="number" className="form-input" value={exp.horasPromedioMes ?? 0} onChange={e => updateExp(i, "horasPromedioMes", Number(e.target.value))} min={0} max={1000000000} />
                     </div>
 
-                    {exp.trabajoActual === "No" && (
+                    <div className="form-group">
+                      <label className="form-label">Tiempo experiencia <span className="required">*</span></label>
+                      <input type="number" className="form-input" required value={exp.tiempoExperiencia} onChange={e => updateExp(i, "tiempoExperiencia", Number(e.target.value))} min={1} max={1000000000} />
+                    </div>
+
+                    {!exp.trabajoActual && (
                       <div className="form-group span-3">
                         <label className="form-label">Motivo de retiro</label>
-                        <input className="form-input" value={exp.motivoRetiro ?? ""}
-                          onChange={e => setExps(p => p.map((x, idx) => idx === i ? { ...x, motivoRetiro: e.target.value } : x))}
-                          placeholder="Opcional" />
+                        <input className="form-input" value={exp.motivoRetiro ?? ""} onChange={e => updateExp(i, "motivoRetiro", e.target.value)} placeholder="Opcional" />
                       </div>
                     )}
                   </div>
                 </div>
               </div>
             ))}
-            <button type="button" className="btn btn-secondary"
-              onClick={() => setExps(p => [...p, emptyExp()])}>
+            <button type="button" className="btn btn-secondary" onClick={() => setExps(p => [...p, emptyExp()])}>
               + Agregar otra experiencia
             </button>
           </div>
         )}
 
-        {/* ── Experiencia Docente ── */}
         {tab === 1 && (
           <div className="animate-in">
             {docentes.length === 0 && (
@@ -199,73 +311,119 @@ const ExperienciaPage: React.FC = () => {
                 <div className="form-section-header" style={{ cursor: "default" }}>
                   <div className="section-icon">🏫</div>
                   <h3>Docencia #{i + 1}{doc.nombreInstitucion ? ` — ${doc.nombreInstitucion}` : ""}</h3>
-                  <button type="button" className="btn btn-danger btn-sm" style={{ marginLeft: "auto" }}
-                    onClick={() => setDocentes(p => p.filter((_, idx) => idx !== i))}>
+                  <button type="button" className="btn btn-danger btn-sm" style={{ marginLeft: "auto" }} onClick={() => setDocentes(p => p.filter((_, idx) => idx !== i))}>
                     Eliminar
                   </button>
                 </div>
                 <div className="form-section-body">
                   <div className="form-grid cols-3">
                     <div className="form-group">
-                      <label className="form-label">Tipo de institución</label>
-                      <select className="form-select" value={doc.tipoInstitucion}
-                        onChange={e => setDocentes(p => p.map((x, idx) => idx === i ? { ...x, tipoInstitucion: e.target.value } : x))}>
-                        <option value="">Seleccione...</option>
-                        <option value="Pública">Pública</option>
-                        <option value="Privada">Privada</option>
+                      <label className="form-label">Tipo de institución <span className="required">*</span></label>
+                      <select className="form-select" required value={doc.tipoInstitucion} onChange={e => updateDocente(i, "tipoInstitucion", e.target.value)}>
+                        {Object.entries(TipoInstitucionLabels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
                       </select>
                     </div>
+
                     <div className="form-group span-2">
                       <label className="form-label">Nombre de la institución <span className="required">*</span></label>
-                      <input className="form-input" value={doc.nombreInstitucion}
-                        onChange={e => setDocentes(p => p.map((x, idx) => idx === i ? { ...x, nombreInstitucion: e.target.value } : x))}
-                        placeholder="Ej: Universidad Nacional de Colombia" />
+                      <input className="form-input" required value={doc.nombreInstitucion} onChange={e => updateDocente(i, "nombreInstitucion", e.target.value)} placeholder="Ej: Universidad Nacional de Colombia" />
                     </div>
 
                     <div className="form-group">
-                      <label className="form-label">Nivel académico</label>
-                      <input className="form-input" value={doc.nivelAcademico}
-                        onChange={e => setDocentes(p => p.map((x, idx) => idx === i ? { ...x, nivelAcademico: e.target.value } : x))}
-                        placeholder="Ej: Universitario" />
-                    </div>
-                    <div className="form-group">
-                      <label className="form-label">Área de conocimiento</label>
-                      <input className="form-input" value={doc.areaConocimiento}
-                        onChange={e => setDocentes(p => p.map((x, idx) => idx === i ? { ...x, areaConocimiento: e.target.value } : x))}
-                        placeholder="Ej: Ingeniería" />
-                    </div>
-                    <div className="form-group">
-                      <label className="form-label">Materia impartida</label>
-                      <input className="form-input" value={doc.materiaImpartida}
-                        onChange={e => setDocentes(p => p.map((x, idx) => idx === i ? { ...x, materiaImpartida: e.target.value } : x))}
-                        placeholder="Ej: Cálculo I" />
+                      <label className="form-label">País <span className="required">*</span></label>
+                      <input className="form-input" required value={doc.pais} onChange={e => updateDocente(i, "pais", e.target.value)} />
                     </div>
 
                     <div className="form-group">
-                      <label className="form-label">Fecha de ingreso</label>
-                      <input type="date" className="form-input" value={doc.fechaIngreso}
-                        onChange={e => setDocentes(p => p.map((x, idx) => idx === i ? { ...x, fechaIngreso: e.target.value } : x))} />
+                      <label className="form-label">Departamento <span className="required">*</span></label>
+                      <input className="form-input" required value={doc.departamento} onChange={e => updateDocente(i, "departamento", e.target.value)} />
                     </div>
+
                     <div className="form-group">
-                      <label className="form-label">Fecha de terminación</label>
-                      <input type="date" className="form-input" value={doc.fechaTerminacion ?? ""}
-                        onChange={e => setDocentes(p => p.map((x, idx) => idx === i ? { ...x, fechaTerminacion: e.target.value } : x))} />
+                      <label className="form-label">Municipio <span className="required">*</span></label>
+                      <input className="form-input" required value={doc.municipio} onChange={e => updateDocente(i, "municipio", e.target.value)} />
                     </div>
+
                     <div className="form-group">
-                      <label className="form-label">Tipo de zona</label>
-                      <select className="form-select" value={doc.tipoZona}
-                        onChange={e => setDocentes(p => p.map((x, idx) => idx === i ? { ...x, tipoZona: e.target.value } : x))}>
-                        <option value="Urbana">Urbana</option>
-                        <option value="Rural">Rural</option>
+                      <label className="form-label">Nivel académico <span className="required">*</span></label>
+                      <select className="form-select" required value={doc.nivelAcademico} onChange={e => updateDocente(i, "nivelAcademico", e.target.value)}>
+                        {Object.entries(NivelAcademicoLabels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
                       </select>
                     </div>
+
+                    <div className="form-group">
+                      <label className="form-label">Área de conocimiento <span className="required">*</span></label>
+                      <select className="form-select" required value={doc.areaConocimiento} onChange={e => updateDocente(i, "areaConocimiento", e.target.value)}>
+                        {Object.entries(AreaConocimientoLabels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+                      </select>
+                    </div>
+
+                    <div className="form-group">
+                      <label className="form-label">Materia impartida</label>
+                      <input className="form-input" value={doc.materiaImpartida ?? ""} onChange={e => updateDocente(i, "materiaImpartida", e.target.value)} placeholder="Ej: Cálculo I" />
+                    </div>
+
+                    <div className="form-group">
+                      <label className="form-label">Fecha de ingreso <span className="required">*</span></label>
+                      <input type="date" className="form-input" required value={doc.fechaIngreso} onChange={e => updateDocente(i, "fechaIngreso", e.target.value)} />
+                    </div>
+
+                    <div className="form-group">
+                      <label className="form-label">¿Trabajo actual? <span className="required">*</span></label>
+                      <select className="form-select" value={String(doc.trabajoActual)} onChange={e => updateDocente(i, "trabajoActual", e.target.value === "true")}>
+                        <option value="false">No</option>
+                        <option value="true">Sí</option>
+                      </select>
+                    </div>
+
+                    {!doc.trabajoActual && (
+                      <div className="form-group">
+                        <label className="form-label">Fecha de terminación</label>
+                        <input type="date" className="form-input" value={doc.fechaTerminacion ?? ""} onChange={e => updateDocente(i, "fechaTerminacion", e.target.value)} />
+                      </div>
+                    )}
+
+                    <div className="form-group">
+                      <label className="form-label">Tipo de zona <span className="required">*</span></label>
+                      <select className="form-select" required value={doc.tipoZona} onChange={e => updateDocente(i, "tipoZona", e.target.value)}>
+                        {Object.entries(TipoZonaLabels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+                      </select>
+                    </div>
+
+                    <div className="form-group">
+                      <label className="form-label">Jornada laboral <span className="required">*</span></label>
+                      <select className="form-select" required value={doc.jornadaLaboral} onChange={e => updateDocente(i, "jornadaLaboral", e.target.value)}>
+                        {Object.entries(JornadaLaboralLabels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+                      </select>
+                    </div>
+
+                    <div className="form-group">
+                      <label className="form-label">Horas promedio / mes</label>
+                      <input type="number" className="form-input" value={doc.horasPromedioMes ?? 0} onChange={e => updateDocente(i, "horasPromedioMes", Number(e.target.value))} min={0} max={1000000000} />
+                    </div>
+
+                    <div className="form-group">
+                      <label className="form-label">Tiempo experiencia <span className="required">*</span></label>
+                      <input type="number" className="form-input" required value={doc.tiempoExperiencia} onChange={e => updateDocente(i, "tiempoExperiencia", Number(e.target.value))} min={1} max={1000000000} />
+                    </div>
+
+                    <div className="form-group">
+                      <label className="form-label">Teléfono</label>
+                      <input className="form-input" value={doc.telefono ?? ""} onChange={e => updateDocente(i, "telefono", e.target.value)} />
+                    </div>
+
+                    {!doc.trabajoActual && (
+                      <div className="form-group span-2">
+                        <label className="form-label">Motivo de retiro</label>
+                        <input className="form-input" value={doc.motivoRetiro ?? ""} onChange={e => updateDocente(i, "motivoRetiro", e.target.value)} />
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
             ))}
 
-            <button type="button" className="btn btn-secondary"
-              onClick={() => setDocentes(p => [...p, emptyDocente()])}>
+            <button type="button" className="btn btn-secondary" onClick={() => setDocentes(p => [...p, emptyDocente()])}>
               + Agregar experiencia docente
             </button>
           </div>
@@ -274,8 +432,9 @@ const ExperienciaPage: React.FC = () => {
         <div className="flex justify-between items-center mt-4">
           <span />
           <div className="flex gap-2">
-            <button type="submit" className="btn btn-secondary">Guardar borrador</button>
-            <button type="submit" className="btn btn-primary">✓ Guardar experiencia</button>
+            <button type="submit" className="btn btn-primary" disabled={saving}>
+              {saving ? "Guardando..." : "✓ Guardar sección"}
+            </button>
           </div>
         </div>
       </form>

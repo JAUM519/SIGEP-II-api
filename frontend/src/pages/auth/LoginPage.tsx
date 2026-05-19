@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "../../hooks/useAuth";
 import { authService } from "../../services/api";
 import { TipoIdentificacion, TipoIdentificacionLabels } from "../../types";
 
