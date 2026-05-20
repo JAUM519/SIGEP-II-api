@@ -28,6 +28,7 @@ import com.apirest.backend.exceptions.CurriculumNotFoundException;
 import com.apirest.backend.models.curriculum.*;
 import com.apirest.backend.models.curriculum.sections.*;
 import com.apirest.backend.repositories.ICurriculumRepository;
+import org.bson.types.ObjectId;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -1095,12 +1096,12 @@ public class CurriculumServiceImp implements ICurriculumService{
             curriculumFinal.setGerenciaPublica(new GerenciaPublica());
         }
 
-        if (curriculumFinal.getGerenciaPublica().getParticipacionesPoryectos() == null) {
-            curriculumFinal.getGerenciaPublica().setParticipacionesPoryectos(new ArrayList<>());
+        if (curriculumFinal.getGerenciaPublica().getParticipacionesProyectos() == null) {
+            curriculumFinal.getGerenciaPublica().setParticipacionesProyectos(new ArrayList<>());
         }
 
         ParticipacionProyecto participacionProyecto = ParticipacionProyecto.builder()
-                .id(new org.bson.types.ObjectId().toString())
+                .id(new ObjectId().toString())
                 .nombre(curriculumRequest.getNombre())
                 .rolDesempeñado(curriculumRequest.getRolDesempeñado())
                 .nombreEntidadOrganizacion(curriculumRequest.getNombreEntidadOrganizacion())
@@ -1111,7 +1112,7 @@ public class CurriculumServiceImp implements ICurriculumService{
                 .fechaTerminacion(curriculumRequest.getFechaTerminacion())
                 .build();
 
-        curriculumFinal.getGerenciaPublica().getParticipacionesPoryectos().add(participacionProyecto);
+        curriculumFinal.getGerenciaPublica().getParticipacionesProyectos().add(participacionProyecto);
         curriculumRepository.save(curriculumFinal);
     }
 
@@ -1200,11 +1201,11 @@ public class CurriculumServiceImp implements ICurriculumService{
         }
         CurriculumModelo curriculumFinal = curriculumExiste.get();
 
-        if (curriculumFinal.getGerenciaPublica() == null || curriculumFinal.getGerenciaPublica().getParticipacionesPoryectos() == null) {
+        if (curriculumFinal.getGerenciaPublica() == null || curriculumFinal.getGerenciaPublica().getParticipacionesProyectos() == null) {
             return Collections.emptyList();
         }
 
-        return curriculumFinal.getGerenciaPublica().getParticipacionesPoryectos().stream()
+        return curriculumFinal.getGerenciaPublica().getParticipacionesProyectos().stream()
                 .map(participacionProyecto -> ParticipacionProyectoResponse.builder()
                         .id(participacionProyecto.getId())
                         .nombre(participacionProyecto.getNombre())
@@ -1305,11 +1306,11 @@ public class CurriculumServiceImp implements ICurriculumService{
         }
         CurriculumModelo curriculumFinal = curriculumExiste.get();
 
-        if (curriculumFinal.getGerenciaPublica() == null || curriculumFinal.getGerenciaPublica().getParticipacionesPoryectos() == null) {
+        if (curriculumFinal.getGerenciaPublica() == null || curriculumFinal.getGerenciaPublica().getParticipacionesProyectos() == null) {
             throw new CurriculumNotFoundException("No hay participaciones en proyectos registradas");
         }
 
-        ParticipacionProyecto participacionProyecto = curriculumFinal.getGerenciaPublica().getParticipacionesPoryectos().stream()
+        ParticipacionProyecto participacionProyecto = curriculumFinal.getGerenciaPublica().getParticipacionesProyectos().stream()
                 .filter(p -> p.getId().equals(participacionId))
                 .findFirst()
                 .orElseThrow(() -> new CurriculumNotFoundException("Participación en proyecto no encontrada con id: " + participacionId));
