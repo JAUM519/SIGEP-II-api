@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import AppLayout from "../../components/layout/AppLayout";
 import { curriculumService, getApiError, toInstant } from "../../services/api";
 import {
@@ -20,58 +20,136 @@ import {
   type ExperienciaLaboralDocente,
 } from "../../types";
 
+const toDateInput = (value?: string) => value ? value.slice(0, 10) : "";
+const createClientId = () => `tmp-${crypto.randomUUID()}`;
+
+
+const emptyExp = (): ExperienciaLaboral => ({
+  clientId: createClientId(),
+  tipoEntidad: TipoEntidad.Publica,
+  nombreEntidad: "",
+  pais: "Colombia",
+  departamento: "",
+  municipio: "",
+  direccionEntidad: "",
+  dependencia: "",
+  nivelJerarquiaEmpleo: NivelJerarquicoEmpleo.Profesional,
+  cargo: "",
+  telefono: "",
+  trabajoActual: false,
+  fechaIngreso: "",
+  fechaRetiro: "",
+  jornadaLaboral: JornadaLaboral.TiempoCompleto,
+  horasPromedioMes: 1,
+  tiempoExperiencia: 1,
+  motivoRetiro: "",
+  certificadoLaboral: "",
+  documentoVerificado: false,
+});
+
+const emptyDocente = (): ExperienciaLaboralDocente => ({
+  clientId: createClientId(),
+  tipoInstitucion: TipoInstitucion.Publica,
+  nombreInstitucion: "",
+  pais: "Colombia",
+  departamento: "",
+  municipio: "",
+  nivelAcademico: NivelAcademico.Pregrado,
+  areaConocimiento: AreaConocimiento.CienciasEducacion,
+  tipoZona: TipoZona.Urbana,
+  trabajoActual: false,
+  fechaIngreso: "",
+  fechaTerminacion: "",
+  jornadaLaboral: JornadaLaboral.TiempoCompleto,
+  horasPromedioMes: 1,
+  motivoRetiro: "",
+  telefono: "",
+  materiaImpartida: "",
+  tiempoExperiencia: 1,
+  certificadoLaboral: "",
+  documentoVerificado: false,
+});
+
 const ExperienciaPage: React.FC = () => {
   const [tab, setTab] = useState(0);
   const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-
-  const emptyExp = (): ExperienciaLaboral => ({
-    tipoEntidad: TipoEntidad.Publica,
-    nombreEntidad: "",
-    pais: "Colombia",
-    departamento: "",
-    municipio: "",
-    direccionEntidad: "",
-    dependencia: "",
-    nivelJerarquiaEmpleo: NivelJerarquicoEmpleo.Profesional,
-    cargo: "",
-    telefono: "",
-    trabajoActual: false,
-    fechaIngreso: "",
-    fechaRetiro: "",
-    jornadaLaboral: JornadaLaboral.TiempoCompleto,
-    horasPromedioMes: 0,
-    tiempoExperiencia: 1,
-    motivoRetiro: "",
-    certificadoLaboral: "",
-    documentoVerificado: false,
-  });
-
-  const emptyDocente = (): ExperienciaLaboralDocente => ({
-    tipoInstitucion: TipoInstitucion.Publica,
-    nombreInstitucion: "",
-    pais: "Colombia",
-    departamento: "",
-    municipio: "",
-    nivelAcademico: NivelAcademico.Pregrado,
-    areaConocimiento: AreaConocimiento.CienciasEducacion,
-    tipoZona: TipoZona.Urbana,
-    trabajoActual: false,
-    fechaIngreso: "",
-    fechaTerminacion: "",
-    jornadaLaboral: JornadaLaboral.TiempoCompleto,
-    horasPromedioMes: 0,
-    motivoRetiro: "",
-    telefono: "",
-    materiaImpartida: "",
-    tiempoExperiencia: 1,
-    certificadoLaboral: "",
-    documentoVerificado: false,
-  });
 
   const [exps, setExps] = useState<ExperienciaLaboral[]>([emptyExp()]);
   const [docentes, setDocentes] = useState<ExperienciaLaboralDocente[]>([]);
+
+  const cargarExperiencia = useCallback(async (silent = false) => {
+    if (!silent) {
+      setLoading(true);
+      setError("");
+    }
+
+    const [experienciasResult, docentesResult] = await Promise.allSettled([
+      curriculumService.obtenerExperienciasLaborales(),
+      curriculumService.obtenerExperienciasDocentes(),
+    ]);
+
+    if (experienciasResult.status === "fulfilled" && Array.isArray(experienciasResult.value)) {
+      setExps(experienciasResult.value.length ? experienciasResult.value.map((item) => ({
+        id: item.id,
+        clientId: item.id ?? createClientId(),
+        tipoEntidad: item.tipoEntidad ?? TipoEntidad.Publica,
+        nombreEntidad: item.nombreEntidad ?? "",
+        pais: item.pais ?? "Colombia",
+        departamento: item.departamento ?? "",
+        municipio: item.municipio ?? "",
+        direccionEntidad: item.direccionEntidad ?? "",
+        dependencia: item.dependencia ?? "",
+        nivelJerarquiaEmpleo: item.nivelJerarquiaEmpleo ?? NivelJerarquicoEmpleo.Profesional,
+        cargo: item.cargo ?? "",
+        telefono: item.telefono ?? "",
+        trabajoActual: Boolean(item.trabajoActual),
+        fechaIngreso: toDateInput(item.fechaIngreso),
+        fechaRetiro: toDateInput(item.fechaRetiro),
+        jornadaLaboral: item.jornadaLaboral ?? JornadaLaboral.TiempoCompleto,
+        horasPromedioMes: item.horasPromedioMes ?? 1,
+        tiempoExperiencia: item.tiempoExperiencia ?? 1,
+        motivoRetiro: item.motivoRetiro ?? "",
+        certificadoLaboral: item.certificadoLaboral ?? "",
+        documentoVerificado: Boolean(item.documentoVerificado),
+      })) : [emptyExp()]);
+    }
+
+    if (docentesResult.status === "fulfilled" && Array.isArray(docentesResult.value)) {
+      setDocentes(docentesResult.value.map((item) => ({
+        id: item.id,
+        clientId: item.id ?? createClientId(),
+        tipoInstitucion: item.tipoInstitucion ?? TipoInstitucion.Publica,
+        nombreInstitucion: item.nombreInstitucion ?? "",
+        pais: item.pais ?? "Colombia",
+        departamento: item.departamento ?? "",
+        municipio: item.municipio ?? "",
+        nivelAcademico: item.nivelAcademico ?? NivelAcademico.Pregrado,
+        areaConocimiento: item.areaConocimiento ?? AreaConocimiento.CienciasEducacion,
+        tipoZona: item.tipoZona ?? TipoZona.Urbana,
+        trabajoActual: Boolean(item.trabajoActual),
+        fechaIngreso: toDateInput(item.fechaIngreso),
+        fechaTerminacion: toDateInput(item.fechaTerminacion),
+        jornadaLaboral: item.jornadaLaboral ?? JornadaLaboral.TiempoCompleto,
+        horasPromedioMes: item.horasPromedioMes ?? 1,
+        motivoRetiro: item.motivoRetiro ?? "",
+        telefono: item.telefono ?? "",
+        materiaImpartida: item.materiaImpartida ?? "",
+        tiempoExperiencia: item.tiempoExperiencia ?? 1,
+        certificadoLaboral: item.certificadoLaboral ?? "",
+        documentoVerificado: Boolean(item.documentoVerificado),
+      })));
+    }
+
+    if (!silent) setLoading(false);
+  }, []);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => void cargarExperiencia(), 0);
+    return () => window.clearTimeout(timer);
+  }, [cargarExperiencia]);
 
   const updateExp = (i: number, field: keyof ExperienciaLaboral, value: string | boolean | number | undefined) => {
     setExps(prev => prev.map((item, idx) => idx === i ? { ...item, [field]: value } : item));
@@ -94,53 +172,83 @@ const ExperienciaPage: React.FC = () => {
 
     try {
       if (tab === 0) {
-        await Promise.all(exps.map(exp => curriculumService.registrarExperienciaLaboral({
-          tipoEntidad: exp.tipoEntidad as TipoEntidad,
-          nombreEntidad: exp.nombreEntidad.trim(),
-          pais: exp.pais.trim(),
-          departamento: exp.departamento.trim(),
-          municipio: exp.municipio.trim(),
-          direccionEntidad: exp.direccionEntidad.trim(),
-          dependencia: exp.dependencia.trim(),
-          nivelJerarquiaEmpleo: exp.nivelJerarquiaEmpleo as NivelJerarquicoEmpleo,
-          cargo: exp.cargo.trim(),
-          telefono: exp.telefono?.trim() || undefined,
-          trabajoActual: exp.trabajoActual,
-          fechaIngreso: toInstant(exp.fechaIngreso) ?? "",
-          fechaRetiro: exp.trabajoActual ? undefined : toInstant(exp.fechaRetiro),
-          jornadaLaboral: exp.jornadaLaboral as JornadaLaboral,
-          horasPromedioMes: exp.horasPromedioMes,
-          tiempoExperiencia: exp.tiempoExperiencia,
-          motivoRetiro: exp.trabajoActual ? undefined : exp.motivoRetiro?.trim() || undefined,
-          certificadoLaboral: exp.certificadoLaboral?.trim() || undefined,
-          documentoVerificado: exp.documentoVerificado,
-        })));
+        await Promise.all(exps.map((exp) => {
+          if (exp.id) {
+            return curriculumService.actualizarExperienciaLaboral({
+              experienciaLaboralId: exp.id,
+              telefono: exp.telefono?.trim() || undefined,
+              fechaRetiro: exp.trabajoActual ? undefined : toInstant(exp.fechaRetiro),
+              horasPromedioMes: exp.horasPromedioMes,
+              motivoRetiro: exp.trabajoActual ? undefined : exp.motivoRetiro?.trim() || undefined,
+              certificadoLaboral: exp.certificadoLaboral?.trim() || undefined,
+              documentoVerificado: exp.documentoVerificado,
+            });
+          }
+
+          return curriculumService.registrarExperienciaLaboral({
+            tipoEntidad: exp.tipoEntidad as TipoEntidad,
+            nombreEntidad: exp.nombreEntidad.trim(),
+            pais: exp.pais.trim(),
+            departamento: exp.departamento.trim(),
+            municipio: exp.municipio.trim(),
+            direccionEntidad: exp.direccionEntidad.trim(),
+            dependencia: exp.dependencia.trim(),
+            nivelJerarquicoEmpleo: exp.nivelJerarquiaEmpleo as NivelJerarquicoEmpleo,
+            cargo: exp.cargo.trim(),
+            telefono: exp.telefono?.trim() || undefined,
+            trabajoActual: exp.trabajoActual,
+            fechaIngreso: toInstant(exp.fechaIngreso) ?? "",
+            fechaRetiro: exp.trabajoActual ? undefined : toInstant(exp.fechaRetiro),
+            jornadaLaboral: exp.jornadaLaboral as JornadaLaboral,
+            horasPromedioMes: exp.horasPromedioMes,
+            tiempoExperiencia: Math.max(1, Number(exp.tiempoExperiencia || 1)),
+            motivoRetiro: exp.trabajoActual ? undefined : exp.motivoRetiro?.trim() || undefined,
+            certificadoLaboral: exp.certificadoLaboral?.trim() || undefined,
+            documentoVerificado: exp.documentoVerificado,
+          });
+        }));
       }
 
       if (tab === 1) {
-        await Promise.all(docentes.map(doc => curriculumService.registrarExperienciaLaboralDocente({
-          tipoInstitucion: doc.tipoInstitucion as TipoInstitucion,
-          nombreInstitucion: doc.nombreInstitucion.trim(),
-          pais: doc.pais.trim(),
-          departamento: doc.departamento.trim(),
-          municipio: doc.municipio.trim(),
-          nivelAcademico: doc.nivelAcademico as NivelAcademico,
-          areaConocimiento: doc.areaConocimiento as AreaConocimiento,
-          tipoZona: doc.tipoZona as TipoZona,
-          trabajoActual: doc.trabajoActual,
-          fechaIngreso: toInstant(doc.fechaIngreso) ?? "",
-          fechaTerminacion: doc.trabajoActual ? undefined : toInstant(doc.fechaTerminacion),
-          jornadaLaboral: doc.jornadaLaboral as JornadaLaboral,
-          horasPromedioMes: doc.horasPromedioMes,
-          motivoRetiro: doc.trabajoActual ? undefined : doc.motivoRetiro?.trim() || undefined,
-          telefono: doc.telefono?.trim() || undefined,
-          materiaImpartida: doc.materiaImpartida?.trim() || undefined,
-          tiempoExperiencia: doc.tiempoExperiencia,
-          certificadoLaboral: doc.certificadoLaboral?.trim() || undefined,
-          documentoVerificado: doc.documentoVerificado,
-        })));
+        await Promise.all(docentes.map((doc) => {
+          if (doc.id) {
+            return curriculumService.actualizarExperienciaLaboralDocente({
+              experienciaLaboralDocenteId: doc.id,
+              fechaTerminacion: doc.trabajoActual ? undefined : toInstant(doc.fechaTerminacion),
+              horasPromedioMes: doc.horasPromedioMes,
+              motivoRetiro: doc.trabajoActual ? undefined : doc.motivoRetiro?.trim() || undefined,
+              telefono: doc.telefono?.trim() || undefined,
+              materiaImpartida: doc.materiaImpartida?.trim() || undefined,
+              certificadoLaboral: doc.certificadoLaboral?.trim() || undefined,
+              documentoVerificado: doc.documentoVerificado,
+            });
+          }
+
+          return curriculumService.registrarExperienciaLaboralDocente({
+            tipoInstitucion: doc.tipoInstitucion as TipoInstitucion,
+            nombreInstitucion: doc.nombreInstitucion.trim(),
+            pais: doc.pais.trim(),
+            departamento: doc.departamento.trim(),
+            municipio: doc.municipio.trim(),
+            nivelAcademico: doc.nivelAcademico as NivelAcademico,
+            areaConocimiento: doc.areaConocimiento as AreaConocimiento,
+            tipoZona: doc.tipoZona as TipoZona,
+            trabajoActual: doc.trabajoActual,
+            fechaIngreso: toInstant(doc.fechaIngreso) ?? "",
+            fechaTerminacion: doc.trabajoActual ? undefined : toInstant(doc.fechaTerminacion),
+            jornadaLaboral: doc.jornadaLaboral as JornadaLaboral,
+            horasPromedioMes: doc.horasPromedioMes,
+            motivoRetiro: doc.trabajoActual ? undefined : doc.motivoRetiro?.trim() || undefined,
+            telefono: doc.telefono?.trim() || undefined,
+            materiaImpartida: doc.materiaImpartida?.trim() || undefined,
+            tiempoExperiencia: Math.max(1, Number(doc.tiempoExperiencia || 1)),
+            certificadoLaboral: doc.certificadoLaboral?.trim() || undefined,
+            documentoVerificado: doc.documentoVerificado,
+          });
+        }));
       }
 
+      await cargarExperiencia(true);
       showSuccess();
     } catch (err) {
       setError(getApiError(err));
@@ -155,6 +263,12 @@ const ExperienciaPage: React.FC = () => {
         <h2>Experiencia Laboral</h2>
         <p>Registre su historial de empleo en el sector público, privado y docente.</p>
       </div>
+
+      {loading && (
+        <div className="alert alert-info animate-in" style={{ marginBottom: 20 }}>
+          Cargando experiencia guardada...
+        </div>
+      )}
 
       {saved && (
         <div className="alert alert-success animate-in" style={{ marginBottom: 20 }}>
@@ -177,16 +291,25 @@ const ExperienciaPage: React.FC = () => {
       <form onSubmit={handleSave}>
         {tab === 0 && (
           <div className="animate-in">
+            <div className="alert alert-info" style={{ marginBottom: 16 }}>
+              Puede agregar varias experiencias laborales. Para cambiar una experiencia ya guardada, actualice la información disponible y guarde los cambios.
+            </div>
             {exps.map((exp, i) => (
-              <div key={i} className="form-section" style={{ marginBottom: 16 }}>
+              <div key={exp.id ?? exp.clientId ?? i} className="form-section" style={{ marginBottom: 16 }}> 
                 <div className="form-section-header" style={{ cursor: "default" }}>
                   <div className="section-icon">💼</div>
-                  <h3>Empleo #{i + 1}{exp.cargo ? ` — ${exp.cargo}` : ""}</h3>
-                  {exps.length > 1 && (
-                    <button type="button" className="btn btn-danger btn-sm" style={{ marginLeft: "auto" }} onClick={() => setExps(p => p.filter((_, idx) => idx !== i))}>
-                      Eliminar
-                    </button>
-                  )}
+                  <h3>Empleo #{i + 1}{exp.id ? " — existente" : " — nuevo"}{exp.cargo ? ` — ${exp.cargo}` : ""}</h3>
+                  <div style={{ marginLeft: "auto" }}>
+                    {exp.id ? (
+                      <span className="badge badge-green">Registrado</span>
+                    ) : (
+                      exps.length > 1 && (
+                        <button type="button" className="btn btn-danger btn-sm" onClick={() => setExps(p => p.filter((_, idx) => idx !== i))}>
+                          Quitar borrador
+                        </button>
+                      )
+                    )}
+                  </div>
                 </div>
                 <div className="form-section-body">
                   <div className="form-grid cols-3">
@@ -299,6 +422,9 @@ const ExperienciaPage: React.FC = () => {
 
         {tab === 1 && (
           <div className="animate-in">
+            <div className="alert alert-info" style={{ marginBottom: 16 }}>
+              Puede agregar varias experiencias docentes. Para cambiar una experiencia ya guardada, actualice la información disponible y guarde los cambios.
+            </div>
             {docentes.length === 0 && (
               <div className="card" style={{ padding: "40px", textAlign: "center", marginBottom: 16 }}>
                 <div style={{ fontSize: "2.5rem", marginBottom: 12 }}>🏫</div>
@@ -307,13 +433,19 @@ const ExperienciaPage: React.FC = () => {
             )}
 
             {docentes.map((doc, i) => (
-              <div key={i} className="form-section" style={{ marginBottom: 16 }}>
+              <div key={doc.id ?? doc.clientId ?? i} className="form-section" style={{ marginBottom: 16 }}> 
                 <div className="form-section-header" style={{ cursor: "default" }}>
                   <div className="section-icon">🏫</div>
-                  <h3>Docencia #{i + 1}{doc.nombreInstitucion ? ` — ${doc.nombreInstitucion}` : ""}</h3>
-                  <button type="button" className="btn btn-danger btn-sm" style={{ marginLeft: "auto" }} onClick={() => setDocentes(p => p.filter((_, idx) => idx !== i))}>
-                    Eliminar
-                  </button>
+                  <h3>Docencia #{i + 1}{doc.id ? " — existente" : " — nuevo"}{doc.nombreInstitucion ? ` — ${doc.nombreInstitucion}` : ""}</h3>
+                  <div style={{ marginLeft: "auto" }}>
+                    {doc.id ? (
+                      <span className="badge badge-green">Registrado</span>
+                    ) : (
+                      <button type="button" className="btn btn-danger btn-sm" onClick={() => setDocentes(p => p.filter((_, idx) => idx !== i))}>
+                        Quitar borrador
+                      </button>
+                    )}
+                  </div>
                 </div>
                 <div className="form-section-body">
                   <div className="form-grid cols-3">

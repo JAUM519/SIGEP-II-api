@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import AppLayout from "../../components/layout/AppLayout";
 import { curriculumService, getApiError, toInstant } from "../../services/api";
 import {
@@ -33,52 +33,135 @@ const modalidadLabels: Record<ModalidadEducacionTrabajo, string> = {
   [ModalidadEducacionTrabajo.EducacionTrabajoDesarrolloHumano]: "Educación para el trabajo y desarrollo humano",
 };
 
+const toDateInput = (value?: string) => value ? value.slice(0, 10) : "";
+const createClientId = () => `tmp-${crypto.randomUUID()}`;
+
+
+const emptyFormacion = (): FormacionAcademica => ({
+  clientId: createClientId(),
+  nivelAcademico: NivelAcademico.Pregrado,
+  nivelFormacion: NivelFormacion.Profesional,
+  areaConocimiento: AreaConocimiento.NoAplica,
+  pais: "Colombia",
+  institucionFormacionAcademica: "",
+  programaAcademico: "",
+  tituloObtenido: "",
+  semestresAprobados: undefined,
+  estadoEstudio: EstadoEstudio.Finalizado,
+  fechaTerminacionMaterias: "",
+  fechaGrado: "",
+  estudioConvalidado: false,
+  fechaConvalidacion: "",
+});
+
+const emptyIdioma = (): Idioma => ({
+  clientId: createClientId(),
+  idioma: "",
+  fechaCertificado: "",
+  conversacion: IdiomaNivel.Regular,
+  lectura: IdiomaNivel.Regular,
+  redaccion: IdiomaNivel.Regular,
+  lenguaNativa: false,
+  certificado: "",
+});
+
+const emptyEducacionTrabajo = (): EducacionTrabajo => ({
+  clientId: createClientId(),
+  fechaFinalizacion: "",
+  numeroTotalHoras: 1,
+  pais: "Colombia",
+  nombre: "",
+  institucion: "",
+  medioCapacitacion: MedioCapacitacion.Presencial,
+  modalidad: ModalidadEducacionTrabajo.EducacionTrabajoDesarrolloHumano,
+  diplomaActaCertificadoEstudio: "",
+});
+
 const EducacionPage: React.FC = () => {
   const [tab, setTab] = useState(0);
   const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-
-  const emptyFormacion = (): FormacionAcademica => ({
-    nivelAcademico: NivelAcademico.Pregrado,
-    nivelFormacion: NivelFormacion.Profesional,
-    areaConocimiento: AreaConocimiento.NoAplica,
-    pais: "Colombia",
-    institucionFormacionAcademica: "",
-    programaAcademico: "",
-    tituloObtenido: "",
-    semestresAprobados: undefined,
-    estadoEstudio: EstadoEstudio.Finalizado,
-    fechaTerminacionMaterias: "",
-    fechaGrado: "",
-    estudioConvalidado: false,
-    fechaConvalidacion: "",
-  });
-
-  const emptyIdioma = (): Idioma => ({
-    idioma: "",
-    fechaCertificado: "",
-    conversacion: IdiomaNivel.Regular,
-    lectura: IdiomaNivel.Regular,
-    redaccion: IdiomaNivel.Regular,
-    lenguaNativa: false,
-    certificado: "",
-  });
-
-  const emptyEducacionTrabajo = (): EducacionTrabajo => ({
-    fechaFinalizacion: "",
-    numeroTotalHoras: 1,
-    pais: "Colombia",
-    nombre: "",
-    institucion: "",
-    medioCapacitacion: MedioCapacitacion.Presencial,
-    modalidad: ModalidadEducacionTrabajo.EducacionTrabajoDesarrolloHumano,
-    diplomaActaCertificadoEstudio: "",
-  });
 
   const [formaciones, setFormaciones] = useState<FormacionAcademica[]>([emptyFormacion()]);
   const [idiomas, setIdiomas] = useState<Idioma[]>([]);
   const [trabajos, setTrabajos] = useState<EducacionTrabajo[]>([]);
+
+  const cargarEducacion = useCallback(async (silent = false) => {
+    if (!silent) {
+      setLoading(true);
+      setError("");
+    }
+
+    const [formacionesResult, idiomasResult, trabajosResult] = await Promise.allSettled([
+      curriculumService.obtenerFormacionesAcademicas(),
+      curriculumService.obtenerIdiomas(),
+      curriculumService.obtenerEducacionesTrabajo(),
+    ]);
+
+    if (formacionesResult.status === "fulfilled" && Array.isArray(formacionesResult.value)) {
+      setFormaciones(formacionesResult.value.length ? formacionesResult.value.map((item) => ({
+        id: item.id,
+        clientId: item.id ?? createClientId(),
+        nivelAcademico: item.nivelAcademico ?? NivelAcademico.Pregrado,
+        nivelFormacion: item.nivelFormacion ?? NivelFormacion.Profesional,
+        areaConocimiento: item.areaConocimiento ?? AreaConocimiento.NoAplica,
+        pais: item.pais ?? "Colombia",
+        institucionFormacionAcademica: item.institucion ?? "",
+        programaAcademico: item.programaAcademico ?? "",
+        tituloObtenido: item.tituloObtenido ?? "",
+        semestresAprobados: item.semestresAprobados,
+        estadoEstudio: item.estadoEstudio ?? EstadoEstudio.Finalizado,
+        fechaTerminacionMaterias: toDateInput(item.fechaTerminacionMaterias),
+        fechaGrado: toDateInput(item.fechaGrado),
+        estudioConvalidado: Boolean(item.estudioConvalidado),
+        fechaConvalidacion: toDateInput(item.fechaConvalidacion),
+        tarjetaProfesional: item.tarjetaProfesional ?? "",
+        estudioExterior: toDateInput(item.estudioExterior),
+        archivoTarjetaProfesioal: item.archivoTarjetaProfesioal ?? "",
+        verificTarjetaProfesional: Boolean(item.verificTarjetaProfesional),
+        archivoEducacionFormal: item.archivoEducacionFormal ?? "",
+        verificEducacionFormal: Boolean(item.verificEducacionFormal),
+      })) : [emptyFormacion()]);
+    }
+
+    if (idiomasResult.status === "fulfilled" && Array.isArray(idiomasResult.value)) {
+      setIdiomas(idiomasResult.value.map((item) => ({
+        id: item.id,
+        clientId: item.id ?? createClientId(),
+        idioma: item.idioma ?? "",
+        fechaCertificado: toDateInput(item.fechaCertificado),
+        conversacion: item.conversacion ?? IdiomaNivel.Regular,
+        lectura: item.lectura ?? IdiomaNivel.Regular,
+        redaccion: item.redaccion ?? IdiomaNivel.Regular,
+        lenguaNativa: Boolean(item.lenguaNativa),
+        certificado: item.certificado ?? "",
+      })));
+    }
+
+    if (trabajosResult.status === "fulfilled" && Array.isArray(trabajosResult.value)) {
+      setTrabajos(trabajosResult.value.map((item) => ({
+        id: item.id,
+        clientId: item.id ?? createClientId(),
+        fechaFinalizacion: toDateInput(item.fechaFinalizacion),
+        numeroTotalHoras: item.numeroTotalHoras ?? 1,
+        pais: item.pais ?? "Colombia",
+        nombre: item.nombre ?? "",
+        institucion: item.institucion ?? "",
+        medioCapacitacion: item.medioCapacitacion ?? MedioCapacitacion.Presencial,
+        modalidad: item.modalidad ?? ModalidadEducacionTrabajo.EducacionTrabajoDesarrolloHumano,
+        diplomaActaCertificadoEstudio: item.diplomaActaCertificadoEstudio ?? "",
+      })));
+    }
+
+    if (!silent) setLoading(false);
+  }, []);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => void cargarEducacion(), 0);
+    return () => window.clearTimeout(timer);
+  }, [cargarEducacion]);
 
   const updateFormacion = (i: number, field: keyof FormacionAcademica, value: string | boolean | number | undefined) => {
     setFormaciones(prev => prev.map((f, idx) => idx === i ? { ...f, [field]: value } : f));
@@ -105,46 +188,93 @@ const EducacionPage: React.FC = () => {
 
     try {
       if (tab === 0) {
-        await Promise.all(formaciones.map(f => curriculumService.registrarFormacionAcademica({
-          nivelAcademico: f.nivelAcademico as NivelAcademico,
-          nivelFormacion: f.nivelFormacion as NivelFormacion,
-          areaConocimiento: f.areaConocimiento as AreaConocimiento,
-          pais: f.pais.trim(),
-          institucion: f.institucionFormacionAcademica.trim(),
-          programaAcademico: f.programaAcademico.trim() || undefined,
-          tituloObtenido: f.tituloObtenido.trim(),
-          semestresAprobados: f.semestresAprobados,
-          estadoEstudio: f.estadoEstudio,
-          fechaTerminacionMaterias: toInstant(f.fechaTerminacionMaterias),
-          fechaGrado: toInstant(f.fechaGrado),
-          estudioConvalidado: f.estudioConvalidado,
-          fechaConvalidacion: toInstant(f.fechaConvalidacion),
-        })));
+        await Promise.all(formaciones.map((f) => {
+          if (f.id) {
+            return curriculumService.actualizarFormacionAcademica({
+              formacionId: f.id,
+              areaConocimiento: f.areaConocimiento || undefined,
+              programaAcademico: f.programaAcademico.trim() || undefined,
+              semestresAprobados: f.semestresAprobados,
+              estadoEstudio: f.estadoEstudio,
+              fechaTerminacionMaterias: toInstant(f.fechaTerminacionMaterias),
+              fechaGrado: toInstant(f.fechaGrado),
+              estudioConvalidado: f.estudioConvalidado,
+              fechaConvalidacion: toInstant(f.fechaConvalidacion),
+              tarjetaProfesional: f.tarjetaProfesional?.trim() || undefined,
+              estudioExterior: toInstant(f.estudioExterior),
+              archivoTarjetaProfesioal: f.archivoTarjetaProfesioal?.trim() || undefined,
+              verificTarjetaProfesional: f.verificTarjetaProfesional,
+              archivoEducacionFormal: f.archivoEducacionFormal?.trim() || undefined,
+              verificEducacionFormal: f.verificEducacionFormal,
+            });
+          }
+
+          return curriculumService.registrarFormacionAcademica({
+            nivelAcademico: f.nivelAcademico as NivelAcademico,
+            nivelFormacion: f.nivelFormacion as NivelFormacion,
+            areaConocimiento: f.areaConocimiento as AreaConocimiento,
+            pais: f.pais.trim(),
+            institucion: f.institucionFormacionAcademica.trim(),
+            programaAcademico: f.programaAcademico.trim() || undefined,
+            tituloObtenido: f.tituloObtenido.trim(),
+            semestresAprobados: f.semestresAprobados,
+            estadoEstudio: f.estadoEstudio,
+            fechaTerminacionMaterias: toInstant(f.fechaTerminacionMaterias),
+            fechaGrado: toInstant(f.fechaGrado),
+            estudioConvalidado: f.estudioConvalidado,
+            fechaConvalidacion: toInstant(f.fechaConvalidacion),
+            tarjetaProfesional: f.tarjetaProfesional?.trim() || undefined,
+            estudioExterior: toInstant(f.estudioExterior),
+            archivoTarjetaProfesional: (f.archivoTarjetaProfesional ?? f.archivoTarjetaProfesioal)?.trim() || undefined,
+            verificTarjetaProfesional: f.verificTarjetaProfesional,
+            archivoEducacionFormal: f.archivoEducacionFormal?.trim() || undefined,
+            verificEducacionFormal: f.verificEducacionFormal,
+          });
+        }));
       }
 
       if (tab === 1) {
-        await Promise.all(idiomas.map(idioma => curriculumService.registrarIdioma({
-          idioma: idioma.idioma.trim(),
-          fechaCertificado: toInstant(idioma.fechaCertificado) ?? "",
-          conversacion: idioma.conversacion as IdiomaNivel,
-          lectura: idioma.lectura as IdiomaNivel,
-          redaccion: idioma.redaccion as IdiomaNivel,
-          lenguaNativa: idioma.lenguaNativa,
-          certificado: idioma.certificado?.trim() || undefined,
-        })));
+        await Promise.all(idiomas.map((idioma) => {
+          if (idioma.id) {
+            return curriculumService.actualizarIdioma({
+              idiomaId: idioma.id,
+              certificado: idioma.certificado?.trim() || undefined,
+            });
+          }
+
+          return curriculumService.registrarIdioma({
+            idioma: idioma.idioma.trim(),
+            fechaCertificado: toInstant(idioma.fechaCertificado) ?? "",
+            conversacion: idioma.conversacion as IdiomaNivel,
+            lectura: idioma.lectura as IdiomaNivel,
+            redaccion: idioma.redaccion as IdiomaNivel,
+            lenguaNativa: idioma.lenguaNativa,
+            certificado: idioma.certificado?.trim() || undefined,
+          });
+        }));
       }
 
       if (tab === 2) {
-        await Promise.all(trabajos.map(trabajo => curriculumService.registrarEducacionTrabajo({
-          ...trabajo,
-          fechaFinalizacion: toInstant(trabajo.fechaFinalizacion) ?? "",
-          nombre: trabajo.nombre.trim(),
-          institucion: trabajo.institucion.trim(),
-          pais: trabajo.pais.trim(),
-          diplomaActaCertificadoEstudio: trabajo.diplomaActaCertificadoEstudio.trim(),
-        })));
+        await Promise.all(trabajos.map((trabajo) => {
+          if (trabajo.id) {
+            return curriculumService.actualizarEducacionTrabajo({
+              educacionTrabajoId: trabajo.id,
+              diplomaActaCertificadoEstudio: trabajo.diplomaActaCertificadoEstudio.trim() || undefined,
+            });
+          }
+
+          return curriculumService.registrarEducacionTrabajo({
+            ...trabajo,
+            fechaFinalizacion: toInstant(trabajo.fechaFinalizacion) ?? "",
+            nombre: trabajo.nombre.trim(),
+            institucion: trabajo.institucion.trim(),
+            pais: trabajo.pais.trim(),
+            diplomaActaCertificadoEstudio: trabajo.diplomaActaCertificadoEstudio.trim(),
+          });
+        }));
       }
 
+      await cargarEducacion(true);
       showSuccess();
     } catch (err) {
       setError(getApiError(err));
@@ -159,6 +289,12 @@ const EducacionPage: React.FC = () => {
         <h2>Educación</h2>
         <p>Registre formación académica, idiomas y educación para el trabajo.</p>
       </div>
+
+      {loading && (
+        <div className="alert alert-info animate-in" style={{ marginBottom: 20 }}>
+          Cargando educación guardada...
+        </div>
+      )}
 
       {saved && (
         <div className="alert alert-success animate-in" style={{ marginBottom: 20 }}>
@@ -181,16 +317,25 @@ const EducacionPage: React.FC = () => {
       <form onSubmit={handleSave}>
         {tab === 0 && (
           <div className="animate-in">
+            <div className="alert alert-info" style={{ marginBottom: 16 }}>
+              Puede agregar varias formaciones. Guarde los cambios cuando termine de completar la información.
+            </div>
             {formaciones.map((f, i) => (
-              <div key={i} className="form-section" style={{ marginBottom: 16 }}>
+              <div key={f.id ?? f.clientId ?? i} className="form-section" style={{ marginBottom: 16 }}> 
                 <div className="form-section-header" style={{ cursor: "default" }}>
                   <div className="section-icon">🎓</div>
-                  <h3>Estudio #{i + 1}</h3>
-                  {formaciones.length > 1 && (
-                    <button type="button" className="btn btn-danger btn-sm" style={{ marginLeft: "auto" }} onClick={() => setFormaciones(prev => prev.filter((_, idx) => idx !== i))}>
-                      Eliminar
-                    </button>
-                  )}
+                  <h3>Estudio #{i + 1}{f.id ? " — existente" : " — nuevo"}</h3>
+                  <div style={{ marginLeft: "auto" }}>
+                    {f.id ? (
+                      <span className="badge badge-green">Registrado</span>
+                    ) : (
+                      formaciones.length > 1 && (
+                        <button type="button" className="btn btn-danger btn-sm" onClick={() => setFormaciones(prev => prev.filter((_, idx) => idx !== i))}>
+                          Quitar borrador
+                        </button>
+                      )
+                    )}
+                  </div>
                 </div>
                 <div className="form-section-body">
                   <div className="form-grid cols-3">
@@ -274,6 +419,9 @@ const EducacionPage: React.FC = () => {
 
         {tab === 1 && (
           <div className="animate-in">
+            <div className="alert alert-info" style={{ marginBottom: 16 }}>
+              Puede agregar varios idiomas. Para cambiar un idioma ya guardado, actualice la información disponible y guarde los cambios.
+            </div>
             {idiomas.length === 0 && (
               <div className="empty-state card" style={{ padding: "40px" }}>
                 <div style={{ fontSize: "2.5rem", marginBottom: 12 }}>🌐</div>
@@ -282,13 +430,19 @@ const EducacionPage: React.FC = () => {
             )}
 
             {idiomas.map((id, i) => (
-              <div key={i} className="form-section" style={{ marginBottom: 16 }}>
+              <div key={id.id ?? id.clientId ?? i} className="form-section" style={{ marginBottom: 16 }}> 
                 <div className="form-section-header" style={{ cursor: "default" }}>
                   <div className="section-icon">🌐</div>
-                  <h3>Idioma #{i + 1}</h3>
-                  <button type="button" className="btn btn-danger btn-sm" style={{ marginLeft: "auto" }} onClick={() => setIdiomas(prev => prev.filter((_, idx) => idx !== i))}>
-                    Eliminar
-                  </button>
+                  <h3>Idioma #{i + 1}{id.id ? " — existente" : " — nuevo"}</h3>
+                  <div style={{ marginLeft: "auto" }}>
+                    {id.id ? (
+                      <span className="badge badge-green">Registrado</span>
+                    ) : (
+                      <button type="button" className="btn btn-danger btn-sm" onClick={() => setIdiomas(prev => prev.filter((_, idx) => idx !== i))}>
+                        Quitar borrador
+                      </button>
+                    )}
+                  </div>
                 </div>
                 <div className="form-section-body">
                   <div className="form-grid cols-3">
@@ -345,6 +499,9 @@ const EducacionPage: React.FC = () => {
 
         {tab === 2 && (
           <div className="animate-in">
+            <div className="alert alert-info" style={{ marginBottom: 16 }}>
+              Puede agregar varias capacitaciones. Para cambiar una capacitación ya guardada, actualice la información disponible y guarde los cambios.
+            </div>
             {trabajos.length === 0 && (
               <div className="empty-state card" style={{ padding: "40px" }}>
                 <div style={{ fontSize: "2.5rem", marginBottom: 12 }}>📚</div>
@@ -353,13 +510,19 @@ const EducacionPage: React.FC = () => {
             )}
 
             {trabajos.map((trabajo, i) => (
-              <div key={i} className="form-section" style={{ marginBottom: 16 }}>
+              <div key={trabajo.id ?? trabajo.clientId ?? i} className="form-section" style={{ marginBottom: 16 }}> 
                 <div className="form-section-header" style={{ cursor: "default" }}>
                   <div className="section-icon">📚</div>
-                  <h3>Capacitación #{i + 1}</h3>
-                  <button type="button" className="btn btn-danger btn-sm" style={{ marginLeft: "auto" }} onClick={() => setTrabajos(prev => prev.filter((_, idx) => idx !== i))}>
-                    Eliminar
-                  </button>
+                  <h3>Capacitación #{i + 1}{trabajo.id ? " — existente" : " — nuevo"}</h3>
+                  <div style={{ marginLeft: "auto" }}>
+                    {trabajo.id ? (
+                      <span className="badge badge-green">Registrado</span>
+                    ) : (
+                      <button type="button" className="btn btn-danger btn-sm" onClick={() => setTrabajos(prev => prev.filter((_, idx) => idx !== i))}>
+                        Quitar borrador
+                      </button>
+                    )}
+                  </div>
                 </div>
                 <div className="form-section-body">
                   <div className="form-grid cols-3">

@@ -79,8 +79,8 @@ export enum PreferenciaEtnica {
 }
 
 export enum ClaseLibretaMilitar {
-  Primera = "PRIMERACLASE",
-  Segunda = "SEGUNDACLASE",
+  Primera = "PRIMERA_CLASE",
+  Segunda = "SEGUNDA_CLASE",
   Provisional = "PROVISIONAL",
 }
 
@@ -466,6 +466,7 @@ export interface DatosPersonales {
 // ─── Curriculum: Educación ───────────────────────────────────────────────────
 
 export interface FormacionAcademica {
+  clientId?: string;
   id?: string;
   nivelAcademico: NivelAcademico | "";
   nivelFormacion: NivelFormacion | "";
@@ -482,12 +483,12 @@ export interface FormacionAcademica {
   fechaConvalidacion?: string;
   tarjetaProfesional?: string;
   estudioExterior?: string;
+  archivoTarjetaProfesional?: string;
   archivoTarjetaProfesioal?: string;
   verificTarjetaProfesional?: boolean;
   archivoEducacionFormal?: string;
   verificEducacionFormal?: boolean;
 }
-
 export interface RegistrarFormacionAcademicaRequest {
   nivelAcademico: NivelAcademico;
   nivelFormacion: NivelFormacion;
@@ -504,17 +505,18 @@ export interface RegistrarFormacionAcademicaRequest {
   fechaConvalidacion?: string;
   tarjetaProfesional?: string;
   estudioExterior?: string;
-  archivoTarjetaProfesioal?: string;
+  archivoTarjetaProfesional?: string;
   verificTarjetaProfesional?: boolean;
   archivoEducacionFormal?: string;
   verificEducacionFormal?: boolean;
 }
-
-export interface ActualizarFormacionAcademicaRequest extends Partial<Omit<RegistrarFormacionAcademicaRequest, "nivelAcademico" | "nivelFormacion" | "pais" | "institucion" | "tituloObtenido">> {
+export interface ActualizarFormacionAcademicaRequest extends Partial<Omit<RegistrarFormacionAcademicaRequest, "nivelAcademico" | "nivelFormacion" | "pais" | "institucion" | "tituloObtenido" | "archivoTarjetaProfesional">> {
   formacionId: string;
+  archivoTarjetaProfesioal?: string;
 }
 
 export interface Idioma {
+  clientId?: string;
   id?: string;
   idioma: string;
   fechaCertificado: string;
@@ -541,6 +543,7 @@ export interface ActualizarIdiomaRequest {
 }
 
 export interface EducacionTrabajo {
+  clientId?: string;
   id?: string;
   fechaFinalizacion: string;
   numeroTotalHoras: number;
@@ -568,6 +571,7 @@ export interface Educacion {
 // ─── Curriculum: Experiencia ─────────────────────────────────────────────────
 
 export interface ExperienciaLaboral {
+  clientId?: string;
   id?: string;
   tipoEntidad: TipoEntidad | "";
   nombreEntidad: string;
@@ -598,7 +602,7 @@ export interface RegistrarExperienciaLaboralRequest {
   municipio: string;
   direccionEntidad: string;
   dependencia: string;
-  nivelJerarquiaEmpleo: NivelJerarquicoEmpleo;
+  nivelJerarquicoEmpleo: NivelJerarquicoEmpleo;
   cargo: string;
   telefono?: string;
   trabajoActual: boolean;
@@ -623,6 +627,7 @@ export interface ActualizarExperienciaLaboralRequest {
 }
 
 export interface ExperienciaLaboralDocente {
+  clientId?: string;
   id?: string;
   tipoInstitucion: TipoInstitucion | "";
   nombreInstitucion: string;

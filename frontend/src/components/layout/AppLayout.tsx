@@ -73,7 +73,7 @@ const IconLogout = () => (
 );
 
 const mainNavItems: NavItem[] = [
-  { label: "Dashboard",         path: "/dashboard",                icon: <IconDashboard /> },
+  { label: "Inicio",            path: "/dashboard",                icon: <IconDashboard /> },
   { label: "Datos Personales",  path: "/curriculum/datos-personales", icon: <IconHojaVida /> },
   { label: "Educación",         path: "/curriculum/educacion",    icon: <IconEducacion /> },
   { label: "Experiencia Laboral", path: "/curriculum/experiencia", icon: <IconExperiencia /> },

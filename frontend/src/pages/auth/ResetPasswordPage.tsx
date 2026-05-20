@@ -21,7 +21,7 @@ const ResetPasswordPage: React.FC = () => {
     e.preventDefault();
 
     if (!token) {
-      setError("El enlace no tiene token de recuperación.");
+      setError("El enlace de recuperación no es válido.");
       return;
     }
     if (form.contraseña.length < 6) {
@@ -39,7 +39,7 @@ const ResetPasswordPage: React.FC = () => {
       setSuccess(message || "Contraseña actualizada correctamente.");
       setForm({ contraseña: "", confirmarContraseña: "" });
     } catch {
-      setError("No fue posible cambiar la contraseña. El token puede estar vencido o ser inválido.");
+      setError("No fue posible cambiar la contraseña. Solicita un nuevo enlace e inténtalo de nuevo.");
     } finally {
       setLoading(false);
     }
