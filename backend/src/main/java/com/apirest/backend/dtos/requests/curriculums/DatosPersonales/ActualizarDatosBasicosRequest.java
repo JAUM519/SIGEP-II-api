@@ -16,6 +16,9 @@ public class ActualizarDatosBasicosRequest {
     @Max(1000000000)
     private Integer distritoMilitar;
     @Size(max = 150)
+    private String documentoIdentificacion;
+    private Boolean documentoVerificado;
+    @Size(max = 150)
     private String libretaMilitar;
     private Boolean libretaVerificada;
     private Boolean personaExpuestaPoliticamente;

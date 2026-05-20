@@ -94,6 +94,12 @@ public class CurriculumServiceImp implements ICurriculumService{
         if (curriculumRequest.getDistritoMilitar() != null){
             curriculumFinal.getDatosPersonales().getDatosBasicos().setDistritoMilitar(curriculumRequest.getDistritoMilitar());
         }
+        if (curriculumRequest.getDocumentoIdentificacion() != null && !curriculumRequest.getDocumentoIdentificacion().isBlank()){
+            curriculumFinal.getDatosPersonales().getDatosBasicos().setDocumentoIdentificacion(curriculumRequest.getDocumentoIdentificacion());
+        }
+        if (curriculumRequest.getDocumentoVerificado() != null) {
+            curriculumFinal.getDatosPersonales().getDatosBasicos().setDocumentoVerificado(curriculumRequest.getDocumentoVerificado());
+        }
         if (curriculumRequest.getLibretaMilitar() != null && !curriculumRequest.getLibretaMilitar().isBlank()){
             curriculumFinal.getDatosPersonales().getDatosBasicos().setLibretaMilitar(curriculumRequest.getLibretaMilitar());
         }
@@ -314,7 +320,7 @@ public class CurriculumServiceImp implements ICurriculumService{
         }
 
         FormacionAcademica formacionAcademica = FormacionAcademica.builder()
-                .id(new org.bson.types.ObjectId().toString())
+                .id(new ObjectId().toString())
                 .nivelAcademico(curriculumRequest.getNivelAcademico())
                 .nivelFormacion(curriculumRequest.getNivelFormacion())
                 .areaConocimiento(curriculumRequest.getAreaConocimiento())
@@ -420,7 +426,7 @@ public class CurriculumServiceImp implements ICurriculumService{
         }
 
         EducacionTrabajo educacionTrabajo = EducacionTrabajo.builder()
-                .id(new org.bson.types.ObjectId().toString())
+                .id(new ObjectId().toString())
                 .fechaFinalizacion(curriculumRequest.getFechaFinalizacion())
                 .numeroTotalHoras(curriculumRequest.getNumeroTotalHoras())
                 .pais(curriculumRequest.getPais())
@@ -476,7 +482,7 @@ public class CurriculumServiceImp implements ICurriculumService{
         }
 
         Idioma idiomaFinal = Idioma.builder()
-                .id(new org.bson.types.ObjectId().toString())
+                .id(new ObjectId().toString())
                 .idioma(curriculumRequest.getIdioma())
                 .fechaCertificado(curriculumRequest.getFechaCertificado())
                 .conversacion(curriculumRequest.getConversacion())
@@ -715,7 +721,7 @@ public class CurriculumServiceImp implements ICurriculumService{
         }
 
         ExperienciaLaboral experienciaLaboral = ExperienciaLaboral.builder()
-                .id(new org.bson.types.ObjectId().toString())
+                .id(new ObjectId().toString())
                 .tipoEntidad(curriculumRequest.getTipoEntidad())
                 .nombreEntidad(curriculumRequest.getNombreEntidad())
                 .pais(curriculumRequest.getPais())
@@ -793,7 +799,7 @@ public class CurriculumServiceImp implements ICurriculumService{
         }
 
         ExperienciaLaboralDocente experienciaLaboralDocente = ExperienciaLaboralDocente.builder()
-                .id(new org.bson.types.ObjectId().toString())
+                .id(new ObjectId().toString())
                 .tipoInstitucion(curriculumRequest.getTipoInstitucion())
                 .nombreInstitucion(curriculumRequest.getNombreInstitucion())
                 .pais(curriculumRequest.getPais())
@@ -1041,7 +1047,7 @@ public class CurriculumServiceImp implements ICurriculumService{
         }
 
         Publicacion publicacion = Publicacion.builder()
-                .id(new org.bson.types.ObjectId().toString())
+                .id(new ObjectId().toString())
                 .articulo(curriculumRequest.getArticulo())
                 .nombreArticulo(curriculumRequest.getNombreArticulo())
                 .libroResultadoInvestigacion(curriculumRequest.getLibroResultadoInvestigacion())
@@ -1071,7 +1077,7 @@ public class CurriculumServiceImp implements ICurriculumService{
         }
 
         PremioReconocimiento premioReconocimiento = PremioReconocimiento.builder()
-                .id(new org.bson.types.ObjectId().toString())
+                .id(new ObjectId().toString())
                 .tipo(curriculumRequest.getTipo())
                 .nombreEntidadOrganizacion(curriculumRequest.getNombreEntidadOrganizacion())
                 .fecha(curriculumRequest.getFecha())
@@ -1133,7 +1139,7 @@ public class CurriculumServiceImp implements ICurriculumService{
         }
 
         ParticipacionCorporacionEntidad participacionCorporacionEntidad = ParticipacionCorporacionEntidad.builder()
-                .id(new org.bson.types.ObjectId().toString())
+                .id(new ObjectId().toString())
                 .nombreCorporacion(curriculumRequest.getNombreCorporacion())
                 .nombreRazonSocialInstitucion(curriculumRequest.getNombreRazonSocialInstitucion())
                 .nombreEntidadOrganizacion(curriculumRequest.getNombreEntidadOrganizacion())
