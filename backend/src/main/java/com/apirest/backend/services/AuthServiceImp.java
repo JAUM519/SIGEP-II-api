@@ -1,0 +1,145 @@
+package com.apirest.backend.services;
+
+import com.apirest.backend.dtos.requests.usuarios.*;
+import com.apirest.backend.dtos.responses.usuarios.LoginResponse;
+import com.apirest.backend.exceptions.InvalidCredentialsException;
+import com.apirest.backend.exceptions.UserAlreadyExistsException;
+import com.apirest.backend.exceptions.UserNotFoundException;
+import com.apirest.backend.jwts.JwtService;
+import com.apirest.backend.models.UsuarioModelo;
+import com.apirest.backend.models.enums.Usuario.RolUsuarios;
+import com.apirest.backend.repositories.IUsuarioRepository;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
+import java.time.Instant;
+import java.util.Optional;
+
+@Service
+public class AuthServiceImp implements IAuthService{
+
+    private final IUsuarioRepository usuarioRepository;
+    private final JwtService jwtService;
+    private final PasswordEncoder passwordEncoder;
+    private final EmailService emailService;
+
+    public AuthServiceImp(IUsuarioRepository userRepository, JwtService jwtService, PasswordEncoder passwordEncoder, EmailService emailService) {
+        this.usuarioRepository = userRepository;
+        this.jwtService = jwtService;
+        this.passwordEncoder = passwordEncoder;
+        this.emailService = emailService;
+    }
+
+
+    @Override
+    public LoginResponse login(LoginRequest usuarioRequest) {
+        Optional<UsuarioModelo> usuarioExiste = usuarioRepository.findByNumeroIdentificacionAndTipoIdentificacion(usuarioRequest.getNumeroIdentificacion(), usuarioRequest.getTipoIdentificacion());
+        if (!usuarioExiste.isPresent()) {
+            throw new UserNotFoundException(usuarioRequest.getNumeroIdentificacion());
+        }
+        UsuarioModelo usuarioFinal = usuarioExiste.get();
+        if(!passwordEncoder.matches(usuarioRequest.getContraseña(), usuarioFinal.getContraseña())){
+            throw new InvalidCredentialsException("Credenciales invalidas. ");
+        }
+        if(!usuarioFinal.getEstadoActivo()){
+            throw new InvalidCredentialsException("Estado inactivo. ");
+        }
+        if (usuarioFinal.getFechaFin() != null && !usuarioFinal.getFechaFin().isAfter(Instant.now())){
+            usuarioFinal.setEstadoActivo(false);
+            usuarioRepository.save(usuarioFinal);
+            throw new InvalidCredentialsException("Estado inactivo. ");
+        }
+        String tokenUsuario = jwtService.generarToken(usuarioFinal.getId(), usuarioFinal.getRol(), usuarioFinal.getNumeroIdentificacion());
+        LoginResponse usuarioResponse = LoginResponse.builder()
+                .tipoIdentificacion(usuarioFinal.getTipoIdentificacion())
+                .numeroIdentificacion(usuarioFinal.getNumeroIdentificacion())
+                .token(tokenUsuario)
+                .build();
+        return usuarioResponse;
+    }
+
+    @Override
+    public void pedirEnlaceEmail(PedirEnlaceEmailRequest usuarioRequest) {
+        Optional<UsuarioModelo> usuarioExiste = usuarioRepository.findByNumeroIdentificacionAndTipoIdentificacion(usuarioRequest.getNumeroIdentificacion(), usuarioRequest.getTipoIdentificacion());
+        if (!usuarioExiste.isPresent()){
+            throw new UserNotFoundException(usuarioRequest.getNumeroIdentificacion());
+        }
+        UsuarioModelo usuarioFinal = usuarioExiste.get();
+        if (!usuarioFinal.getEstadoActivo()){
+            throw new InvalidCredentialsException("Estado inactivo. ");
+        }
+        String tokenRecuperarContraseña = jwtService.generarTokenRecuperacion(usuarioFinal.getId(), usuarioFinal.getRol(), usuarioFinal.getNumeroIdentificacion());
+        String enlance = "http://localhost:5173/recuperar-contraseña?token=" + tokenRecuperarContraseña;
+
+        emailService.enviarEnlaceRecuperacion(usuarioFinal.getEmail(), enlance);
+    }
+
+    @Override
+    public void cambiarContraseñaDesdeEmail(String TokenRecuperacion, CambiarContraseñaRequest usuarioRequest) {
+        if (jwtService.isExpiradoToken(TokenRecuperacion)) {
+            throw new InvalidCredentialsException("El enlace ha expirado.");
+        }
+        String proposito = (String) jwtService.getClaimByName(TokenRecuperacion, "proposito");
+
+        if (!"recuperar_contraseña".equals(proposito)) {
+            throw new InvalidCredentialsException("Token no válido para recuperación.");
+        }
+
+        String usuarioId = jwtService.getUsuarioIdFromToken(TokenRecuperacion);
+        Optional<UsuarioModelo> usuarioExiste = usuarioRepository.findById(usuarioId);
+        if (!usuarioExiste.isPresent()){
+            throw new UserNotFoundException(usuarioId);
+        }
+
+        UsuarioModelo usuarioFinal = usuarioExiste.get();
+        usuarioFinal.setContraseña(passwordEncoder.encode(usuarioRequest.getContraseña()));
+        usuarioRepository.save(usuarioFinal);
+    }
+
+    @Override
+    public void cambiarContraseña(String idUsuario, CambiarContraseñaRequest contraseñaNueva) {
+        Optional<UsuarioModelo> usuarioExiste = usuarioRepository.findById(idUsuario);
+        if (!usuarioExiste.isPresent()){
+            throw new UserNotFoundException(idUsuario);
+        }
+        UsuarioModelo usuarioFinal = usuarioExiste.get();
+        usuarioFinal.setContraseña(passwordEncoder.encode(contraseñaNueva.getContraseña()));
+        usuarioRepository.save(usuarioFinal);
+    }
+
+    @Override
+    public void crearUsuario(NuevoUsuarioRequest usuarioRequest) {
+        Optional<UsuarioModelo> usuarioExiste = usuarioRepository.findByNumeroIdentificacionAndTipoIdentificacion(usuarioRequest.getNumeroIdentificacion(), usuarioRequest.getTipoIdentificacion());
+        if (usuarioExiste.isPresent()) {
+            throw new UserAlreadyExistsException("El tipo y número de identificación ya están en uso. ");
+        }
+        Optional<UsuarioModelo> usuarioExisteEmail = usuarioRepository.findByEmail(usuarioRequest.getEmail());
+        if (usuarioExisteEmail.isPresent()) {
+            throw new UserAlreadyExistsException("Este email ya está en uso. ");
+        }
+        UsuarioModelo usuarioFinal = UsuarioModelo.builder()
+                .tipoIdentificacion(usuarioRequest.getTipoIdentificacion())
+                .numeroIdentificacion(usuarioRequest.getNumeroIdentificacion())
+                .email(usuarioRequest.getEmail())
+                .contraseña(passwordEncoder.encode(usuarioRequest.getContraseña()))
+                .rol(RolUsuarios.servidorPublico)
+                .estadoActivo(true)
+                .build();
+
+        usuarioRepository.save(usuarioFinal);
+
+    }
+
+    @Override
+    public void inhabilitarUsuario(InhabilitarRequest usuarioRequest) {
+        Optional<UsuarioModelo> usuarioExiste = usuarioRepository.findByNumeroIdentificacionAndTipoIdentificacion(usuarioRequest.getNumeroIdentificacion(), usuarioRequest.getTipoIdentificacion());
+        if (!usuarioExiste.isPresent()) {
+            throw new UserNotFoundException(usuarioRequest.getNumeroIdentificacion());
+        }
+        UsuarioModelo usuarioFinal = usuarioExiste.get();
+
+        usuarioFinal.setFechaFin(usuarioRequest.getFechaFin());
+        usuarioRepository.save(usuarioFinal);
+
+    }
+}
