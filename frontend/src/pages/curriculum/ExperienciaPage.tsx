@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
 import AppLayout from "../../components/layout/AppLayout";
+import FileUploadField from "../../components/common/FileUploadField";
 import { curriculumService, getApiError, toInstant } from "../../services/api";
 import {
   AreaConocimiento,
@@ -410,6 +411,19 @@ const ExperienciaPage: React.FC = () => {
                         <input className="form-input" value={exp.motivoRetiro ?? ""} onChange={e => updateExp(i, "motivoRetiro", e.target.value)} placeholder="Opcional" />
                       </div>
                     )}
+
+                    <div className="form-group span-2">
+                      <FileUploadField
+                        label="Certificado laboral"
+                        value={exp.certificadoLaboral}
+                        onChange={(url) => updateExp(i, "certificadoLaboral", url)}
+                      />
+                    </div>
+
+                    <div className="form-checkbox-group" style={{ marginTop: 12 }}>
+                      <input type="checkbox" id={`exp-cert-${i}`} checked={Boolean(exp.documentoVerificado)} onChange={e => updateExp(i, "documentoVerificado", e.target.checked)} />
+                      <label htmlFor={`exp-cert-${i}`}>Certificado verificado</label>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -550,6 +564,19 @@ const ExperienciaPage: React.FC = () => {
                         <input className="form-input" value={doc.motivoRetiro ?? ""} onChange={e => updateDocente(i, "motivoRetiro", e.target.value)} />
                       </div>
                     )}
+
+                    <div className="form-group span-2">
+                      <FileUploadField
+                        label="Certificado laboral"
+                        value={doc.certificadoLaboral}
+                        onChange={(url) => updateDocente(i, "certificadoLaboral", url)}
+                      />
+                    </div>
+
+                    <div className="form-checkbox-group" style={{ marginTop: 12 }}>
+                      <input type="checkbox" id={`doc-cert-${i}`} checked={Boolean(doc.documentoVerificado)} onChange={e => updateDocente(i, "documentoVerificado", e.target.checked)} />
+                      <label htmlFor={`doc-cert-${i}`}>Certificado verificado</label>
+                    </div>
                   </div>
                 </div>
               </div>

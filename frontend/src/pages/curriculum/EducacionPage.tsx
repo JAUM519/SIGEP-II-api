@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
 import AppLayout from "../../components/layout/AppLayout";
+import FileUploadField from "../../components/common/FileUploadField";
 import { curriculumService, getApiError, toInstant } from "../../services/api";
 import {
   AreaConocimiento,
@@ -401,6 +402,25 @@ const EducacionPage: React.FC = () => {
                       <label className="form-label">Fecha de grado</label>
                       <input type="date" className="form-input" value={f.fechaGrado ?? ""} onChange={e => updateFormacion(i, "fechaGrado", e.target.value)} />
                     </div>
+
+                    <div className="form-group span-2">
+                      <FileUploadField
+                        label="Soporte de educación formal"
+                        value={f.archivoEducacionFormal}
+                        onChange={(url) => updateFormacion(i, "archivoEducacionFormal", url)}
+                      />
+                    </div>
+
+                    <div className="form-group span-2">
+                      <FileUploadField
+                        label="Tarjeta profesional"
+                        value={f.archivoTarjetaProfesional ?? f.archivoTarjetaProfesioal}
+                        onChange={(url) => {
+                          updateFormacion(i, "archivoTarjetaProfesional", url);
+                          updateFormacion(i, "archivoTarjetaProfesioal", url);
+                        }}
+                      />
+                    </div>
                   </div>
 
                   <div className="form-checkbox-group" style={{ marginTop: 12 }}>
@@ -478,8 +498,11 @@ const EducacionPage: React.FC = () => {
                     </div>
 
                     <div className="form-group">
-                      <label className="form-label">Certificado</label>
-                      <input className="form-input" value={id.certificado ?? ""} onChange={e => updateIdioma(i, "certificado", e.target.value)} placeholder="Nombre o URL del certificado" />
+                      <FileUploadField
+                        label="Certificado"
+                        value={id.certificado}
+                        onChange={(url) => updateIdioma(i, "certificado", url)}
+                      />
                     </div>
                   </div>
 
@@ -566,8 +589,12 @@ const EducacionPage: React.FC = () => {
                     </div>
 
                     <div className="form-group span-2">
-                      <label className="form-label">Diploma / acta / certificado <span className="required">*</span></label>
-                      <input className="form-input" required value={trabajo.diplomaActaCertificadoEstudio} onChange={e => updateTrabajo(i, "diplomaActaCertificadoEstudio", e.target.value)} placeholder="Nombre o URL del archivo" />
+                      <FileUploadField
+                        label="Diploma / acta / certificado"
+                        required
+                        value={trabajo.diplomaActaCertificadoEstudio}
+                        onChange={(url) => updateTrabajo(i, "diplomaActaCertificadoEstudio", url)}
+                      />
                     </div>
                   </div>
                 </div>

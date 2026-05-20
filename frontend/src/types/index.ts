@@ -389,6 +389,15 @@ export interface InhabilitarUsuarioRequest {
   fechaFin: string;
 }
 
+// ─── Archivos ───────────────────────────────────────────────────────────────
+
+export interface ArchivoResponse {
+  nombreArchivo: string;
+  url: string;
+  tipoContenido: string;
+  tamañoBytes: number;
+}
+
 // ─── Curriculum: Datos personales ────────────────────────────────────────────
 
 export interface DatosBasicos {
@@ -416,6 +425,8 @@ export interface ActualizarDatosBasicosRequest {
   claseLibretaMilitar?: ClaseLibretaMilitar;
   numeroLibretaMilitar?: string;
   distritoMilitar?: number;
+  documentoIdentificacion?: string;
+  documentoVerificado?: boolean;
   libretaMilitar?: string;
   libretaVerificada?: boolean;
   personaExpuestaPoliticamente?: boolean;

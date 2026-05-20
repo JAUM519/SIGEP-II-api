@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import AppLayout from "../../components/layout/AppLayout";
+import FileUploadField from "../../components/common/FileUploadField";
 import { curriculumService, getApiError, toInstant } from "../../services/api";
 import {
   ClaseLibretaMilitar,
@@ -168,6 +169,8 @@ const DatosPersonalesPage: React.FC = () => {
         claseLibretaMilitar: payload.claseLibretaMilitar,
         numeroLibretaMilitar: payload.numeroLibretaMilitar,
         distritoMilitar: payload.distritoMilitar,
+        documentoIdentificacion: payload.documentoIdentificacion,
+        documentoVerificado: payload.documentoVerificado,
         libretaMilitar: payload.libretaMilitar,
         libretaVerificada: payload.libretaVerificada,
         personaExpuestaPoliticamente: payload.personaExpuestaPoliticamente,
@@ -321,9 +324,22 @@ const DatosPersonalesPage: React.FC = () => {
                   </div>
                   <div className="form-group"><label className="form-label">Número de libreta</label><input className="form-input" value={basicos.numeroLibretaMilitar} onChange={e => setBasicos(p => ({ ...p, numeroLibretaMilitar: e.target.value }))} /></div>
                   <div className="form-group"><label className="form-label">Distrito militar</label><input type="number" className="form-input" value={basicos.distritoMilitar} onChange={e => setBasicos(p => ({ ...p, distritoMilitar: e.target.value }))} /></div>
-                  <div className="form-group"><label className="form-label">Archivo libreta militar</label><input className="form-input" value={basicos.libretaMilitar} onChange={e => setBasicos(p => ({ ...p, libretaMilitar: e.target.value }))} /></div>
-                  <div className="form-group"><label className="form-label">Documento identificación</label><input className="form-input" value={basicos.documentoIdentificacion} onChange={e => setBasicos(p => ({ ...p, documentoIdentificacion: e.target.value }))} /></div>
+                  <div className="form-group">
+                    <FileUploadField
+                      label="Documento de identificación"
+                      value={basicos.documentoIdentificacion}
+                      onChange={(url) => setBasicos(p => ({ ...p, documentoIdentificacion: url, documentoVerificado: false }))}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <FileUploadField
+                      label="Libreta militar"
+                      value={basicos.libretaMilitar}
+                      onChange={(url) => setBasicos(p => ({ ...p, libretaMilitar: url, libretaVerificada: false }))}
+                    />
+                  </div>
                 </div>
+                <div className="form-checkbox-group" style={{ marginTop: 12 }}><input type="checkbox" id="documentoVerificado" checked={basicos.documentoVerificado} onChange={e => setBasicos(p => ({ ...p, documentoVerificado: e.target.checked }))} /><label htmlFor="documentoVerificado">Documento de identificación verificado</label></div>
                 <div className="form-checkbox-group" style={{ marginTop: 12 }}><input type="checkbox" id="libretaVerificada" checked={basicos.libretaVerificada} onChange={e => setBasicos(p => ({ ...p, libretaVerificada: e.target.checked }))} /><label htmlFor="libretaVerificada">Libreta verificada</label></div>
                 <div className="form-checkbox-group" style={{ marginTop: 12 }}><input type="checkbox" id="pep" checked={basicos.personaExpuestaPoliticamente} onChange={e => setBasicos(p => ({ ...p, personaExpuestaPoliticamente: e.target.checked }))} /><label htmlFor="pep">¿Persona expuesta políticamente?</label></div>
               </div>

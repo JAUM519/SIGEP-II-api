@@ -1,5 +1,6 @@
 import axios from "axios";
 import type {
+  ArchivoResponse,
   ActualizarDatosBasicosRequest,
   ActualizarDatosContactoRequest,
   ActualizarDatosDemograficosRequest,
@@ -212,6 +213,29 @@ export const authService = {
 
   inhabilitarUsuario: (data: InhabilitarUsuarioRequest) =>
     api.put("/api/auth/inhabilitarUsuario", data).then((r) => r.data),
+};
+
+
+// Archivos
+export const fileService = {
+  subirArchivo: async (archivo: File): Promise<ArchivoResponse> => {
+    const formData = new FormData();
+    formData.append("archivo", archivo);
+
+    const response = await api.post<ArchivoResponse>("/api/archivos", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+
+    return response.data;
+  },
+
+  verArchivo: async (url: string): Promise<void> => {
+    const response = await api.get<Blob>(url, { responseType: "blob" });
+    const objectUrl = URL.createObjectURL(response.data);
+    window.open(objectUrl, "_blank", "noopener,noreferrer");
+
+    window.setTimeout(() => URL.revokeObjectURL(objectUrl), 60_000);
+  },
 };
 
 // Curriculum
