@@ -1,4 +1,4 @@
-package com.apirest.backend.dtos.responses;
+package com.apirest.backend.dtos.responses.usuarios;
 
 import com.apirest.backend.models.enums.Usuario.TipoIdentificacionUsuarios;
 import lombok.AllArgsConstructor;

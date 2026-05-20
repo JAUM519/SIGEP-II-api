@@ -25,7 +25,7 @@ public class ExperienciaLaboral {
     private String municipio;
     private String direccionEntidad;
     private String dependencia;
-    private NivelJerarquicoEmpleoCurriculum nivelJerarquiaEmpleo;
+    private NivelJerarquicoEmpleoCurriculum nivelJerarquicoEmpleo;
     private String cargo;
     private String telefono;
     private Boolean trabajoActual;

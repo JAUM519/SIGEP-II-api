@@ -33,7 +33,6 @@ public class RegistrarDatosBasicosRequest {
     private String email;
     @NotNull
     private GeneroCurriculum genero;
-    @Size(max = 150)
     private ClaseLibretaMilitarCurriculum claseLibretaMilitar;
     @Size(max = 150)
     private String numeroLibretaMilitar;

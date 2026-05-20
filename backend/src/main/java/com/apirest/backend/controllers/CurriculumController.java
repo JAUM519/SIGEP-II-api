@@ -10,6 +10,18 @@ import com.apirest.backend.dtos.requests.curriculums.GerenciaPublica.RegistrarPa
 import com.apirest.backend.dtos.requests.curriculums.GerenciaPublica.RegistrarParticipacionProyectoRequest;
 import com.apirest.backend.dtos.requests.curriculums.GerenciaPublica.RegistrarPremioReconocimientoRequest;
 import com.apirest.backend.dtos.requests.curriculums.GerenciaPublica.RegistrarPublicacionRequest;
+import com.apirest.backend.dtos.responses.curriculums.DatosPersonales.DatosBasicosResponse;
+import com.apirest.backend.dtos.responses.curriculums.DatosPersonales.DatosContactoResponse;
+import com.apirest.backend.dtos.responses.curriculums.DatosPersonales.DatosDemograficosResponse;
+import com.apirest.backend.dtos.responses.curriculums.Educacion.EducacionTrabajoResponse;
+import com.apirest.backend.dtos.responses.curriculums.Educacion.FormacionAcademicaResponse;
+import com.apirest.backend.dtos.responses.curriculums.Educacion.IdiomaResponse;
+import com.apirest.backend.dtos.responses.curriculums.ExperienciaLaboral.ExperienciaLaboralDocenteResponse;
+import com.apirest.backend.dtos.responses.curriculums.ExperienciaLaboral.ExperienciaLaboralResponse;
+import com.apirest.backend.dtos.responses.curriculums.GerenciaPublica.ParticipacionCorporacionEntidadResponse;
+import com.apirest.backend.dtos.responses.curriculums.GerenciaPublica.ParticipacionProyectoResponse;
+import com.apirest.backend.dtos.responses.curriculums.GerenciaPublica.PremioReconocimientoResponse;
+import com.apirest.backend.dtos.responses.curriculums.GerenciaPublica.PublicacionResponse;
 import com.apirest.backend.models.UsuarioModelo;
 import com.apirest.backend.services.ICurriculumService;
 import jakarta.validation.Valid;
@@ -17,6 +29,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/curriculum")
@@ -65,6 +79,21 @@ public class CurriculumController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
+    @GetMapping("/datosPersonales/datosBasicos")
+    public ResponseEntity<DatosBasicosResponse> obtenerDatosBasicos(@AuthenticationPrincipal UsuarioModelo usuario) {
+        return ResponseEntity.ok(curriculumService.obtenerDatosBasicos(usuario.getId()));
+    }
+
+    @GetMapping("/datosPersonales/datosDemograficos")
+    public ResponseEntity<DatosDemograficosResponse> obtenerDatosDemograficos(@AuthenticationPrincipal UsuarioModelo usuario) {
+        return ResponseEntity.ok(curriculumService.obtenerDatosDemograficos(usuario.getId()));
+    }
+
+    @GetMapping("/datosPersonales/datosContacto")
+    public ResponseEntity<DatosContactoResponse> obtenerDatosContacto(@AuthenticationPrincipal UsuarioModelo usuario) {
+        return ResponseEntity.ok(curriculumService.obtenerDatosContacto(usuario.getId()));
+    }
+
     //Educacion
     @PostMapping("/educacion/formacionAcademica")
     public ResponseEntity<Void> registrarFormacionAcademica(@AuthenticationPrincipal UsuarioModelo usuario, @Valid @RequestBody RegistrarFormacionAcademicaRequest curriculumRequest) {
@@ -102,6 +131,36 @@ public class CurriculumController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
+    @GetMapping("/educacion/formacionAcademica")
+    public ResponseEntity<List<FormacionAcademicaResponse>> obtenerTodasFormacionesAcademicas(@AuthenticationPrincipal UsuarioModelo usuario) {
+        return ResponseEntity.ok(curriculumService.obtenerTodasFormacionesAcademicas(usuario.getId()));
+    }
+
+    @GetMapping("/educacion/trabajo")
+    public ResponseEntity<List<EducacionTrabajoResponse>> obtenerTodaEducacionTrabajo(@AuthenticationPrincipal UsuarioModelo usuario) {
+        return ResponseEntity.ok(curriculumService.obtenerTodaEducacionTrabajo(usuario.getId()));
+    }
+
+    @GetMapping("/educacion/idioma")
+    public ResponseEntity<List<IdiomaResponse>> obtenerTodosIdiomas(@AuthenticationPrincipal UsuarioModelo usuario) {
+        return ResponseEntity.ok(curriculumService.obtenerTodosIdiomas(usuario.getId()));
+    }
+
+    @GetMapping("/educacion/formacionAcademica/{formacionId}")
+    public ResponseEntity<FormacionAcademicaResponse> obtenerFormacionAcademica(@AuthenticationPrincipal UsuarioModelo usuario, @PathVariable String formacionId) {
+        return ResponseEntity.ok(curriculumService.obtenerFormacionAcademica(usuario.getId(), formacionId));
+    }
+
+    @GetMapping("/educacion/trabajo/{educacionId}")
+    public ResponseEntity<EducacionTrabajoResponse> obtenerEducacionTrabajo(@AuthenticationPrincipal UsuarioModelo usuario, @PathVariable String educacionId) {
+        return ResponseEntity.ok(curriculumService.obtenerEducacionTrabajo(usuario.getId(), educacionId));
+    }
+
+    @GetMapping("/educacion/idioma/{idiomaId}")
+    public ResponseEntity<IdiomaResponse> obtenerIdioma(@AuthenticationPrincipal UsuarioModelo usuario, @PathVariable String idiomaId) {
+        return ResponseEntity.ok(curriculumService.obtenerIdioma(usuario.getId(), idiomaId));
+    }
+
     //Experiencia
     @PostMapping("/experienciaLaboral")
     public ResponseEntity<Void> registrarExperienciaLaboral(@AuthenticationPrincipal UsuarioModelo usuario, @Valid @RequestBody RegistrarExperienciaLaboralRequest curriculumRequest) {
@@ -127,6 +186,26 @@ public class CurriculumController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
+    @GetMapping("/experienciaLaboral")
+    public ResponseEntity<List<ExperienciaLaboralResponse>> obtenerTodasExperienciaLaboral(@AuthenticationPrincipal UsuarioModelo usuario) {
+        return ResponseEntity.ok(curriculumService.obtenerTodasExperienciaLaboral(usuario.getId()));
+    }
+
+    @GetMapping("/experienciaLaboral/docente")
+    public ResponseEntity<List<ExperienciaLaboralDocenteResponse>> obtenerTodasExperienciaLaboralDocente(@AuthenticationPrincipal UsuarioModelo usuario) {
+        return ResponseEntity.ok(curriculumService.obtenerTodasExperienciaLaboralDocente(usuario.getId()));
+    }
+
+    @GetMapping("/experienciaLaboral/{experienciaLaboralId}")
+    public ResponseEntity<ExperienciaLaboralResponse> obtenerExperienciaLaboral(@AuthenticationPrincipal UsuarioModelo usuario, @PathVariable String experienciaLaboralId) {
+        return ResponseEntity.ok(curriculumService.obtenerExperienciaLaboral(usuario.getId(), experienciaLaboralId));
+    }
+
+    @GetMapping("/experienciaLaboral/docente/{experienciaLaboralId}")
+    public ResponseEntity<ExperienciaLaboralDocenteResponse> obtenerExperienciaLaboralDocente(@AuthenticationPrincipal UsuarioModelo usuario, @PathVariable String experienciaLaboralId) {
+        return ResponseEntity.ok(curriculumService.obtenerExperienciaLaboralDocente(usuario.getId(), experienciaLaboralId));
+    }
+
     //GerenciaPublica
     @PostMapping("/gerenciaPublica/publicacion")
     public ResponseEntity<Void> registrarPublicacion(@AuthenticationPrincipal UsuarioModelo usuario, @Valid @RequestBody RegistrarPublicacionRequest curriculumRequest) {
@@ -150,6 +229,46 @@ public class CurriculumController {
     public ResponseEntity<Void> registrarParticipacionCorporacionEntidad(@AuthenticationPrincipal UsuarioModelo usuario, @Valid @RequestBody RegistrarParticipacionCorporacionEntidadRequest curriculumRequest) {
         curriculumService.registrarParticipacionCorporacionEntidad(usuario.getId(), curriculumRequest);
         return new ResponseEntity<>(HttpStatus.CREATED);
+    }
+
+    @GetMapping("/gerenciaPublica/publicacion")
+    public ResponseEntity<List<PublicacionResponse>> obtenerTodasPublicaciones(@AuthenticationPrincipal UsuarioModelo usuario) {
+        return ResponseEntity.ok(curriculumService.obtenerTodasPublicaciones(usuario.getId()));
+    }
+
+    @GetMapping("/gerenciaPublica/premioReconocimiento")
+    public ResponseEntity<List<PremioReconocimientoResponse>> obtenerTodosPremiosReconocimientos(@AuthenticationPrincipal UsuarioModelo usuario) {
+        return ResponseEntity.ok(curriculumService.obtenerTodosPremiosReconocimientos(usuario.getId()));
+    }
+
+    @GetMapping("/gerenciaPublica/participacionProyecto")
+    public ResponseEntity<List<ParticipacionProyectoResponse>> obtenerTodasParticipacionesProyectos(@AuthenticationPrincipal UsuarioModelo usuario) {
+        return ResponseEntity.ok(curriculumService.obtenerTodasParticipacionesProyectos(usuario.getId()));
+    }
+
+    @GetMapping("/gerenciaPublica/participacionCorporacionEntidad")
+    public ResponseEntity<List<ParticipacionCorporacionEntidadResponse>> obtenerTodasParticipacionesCorporacionesEntidades(@AuthenticationPrincipal UsuarioModelo usuario) {
+        return ResponseEntity.ok(curriculumService.obtenerTodasParticipacionesCorporacionesEntidades(usuario.getId()));
+    }
+
+    @GetMapping("/gerenciaPublica/publicacion/{publicacionId}")
+    public ResponseEntity<PublicacionResponse> obtenerPublicacionPorId(@AuthenticationPrincipal UsuarioModelo usuario, @PathVariable String publicacionId) {
+        return ResponseEntity.ok(curriculumService.obtenerPublicacionPorId(usuario.getId(), publicacionId));
+    }
+
+    @GetMapping("/gerenciaPublica/premioReconocimiento/{premioId}")
+    public ResponseEntity<PremioReconocimientoResponse> obtenerPremioReconocimientoPorId(@AuthenticationPrincipal UsuarioModelo usuario, @PathVariable String premioId) {
+        return ResponseEntity.ok(curriculumService.obtenerPremioReconocimientoPorId(usuario.getId(), premioId));
+    }
+
+    @GetMapping("/gerenciaPublica/participacionProyecto/{participacionId}")
+    public ResponseEntity<ParticipacionProyectoResponse> obtenerParticipacionProyectoPorId(@AuthenticationPrincipal UsuarioModelo usuario, @PathVariable String participacionId) {
+        return ResponseEntity.ok(curriculumService.obtenerParticipacionProyectoPorId(usuario.getId(), participacionId));
+    }
+
+    @GetMapping("/gerenciaPublica/participacionCorporacionEntidad/{corporacionId}")
+    public ResponseEntity<ParticipacionCorporacionEntidadResponse> obtenerParticipacionCorporacionEntidadPorId(@AuthenticationPrincipal UsuarioModelo usuario, @PathVariable String corporacionId) {
+        return ResponseEntity.ok(curriculumService.obtenerParticipacionCorporacionEntidadPorId(usuario.getId(), corporacionId));
     }
 
 }

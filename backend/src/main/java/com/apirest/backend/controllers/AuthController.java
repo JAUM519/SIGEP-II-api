@@ -1,7 +1,7 @@
 package com.apirest.backend.controllers;
 
 import com.apirest.backend.dtos.requests.usuarios.*;
-import com.apirest.backend.dtos.responses.LoginResponse;
+import com.apirest.backend.dtos.responses.usuarios.LoginResponse;
 import com.apirest.backend.models.UsuarioModelo;
 import com.apirest.backend.services.IAuthService;
 import jakarta.validation.Valid;

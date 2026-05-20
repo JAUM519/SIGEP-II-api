@@ -1,4 +1,4 @@
-package com.apirest.backend.models.curriculum.sections;
+package com.apirest.backend.dtos.responses.curriculums.DatosPersonales;
 
 import com.apirest.backend.models.enums.Curriculum.ClaseLibretaMilitarCurriculum;
 import com.apirest.backend.models.enums.Curriculum.GeneroCurriculum;
@@ -14,7 +14,7 @@ import java.time.Instant;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class DatosBasicos {
+public class DatosBasicosResponse {
     private String nombre;
     private TipoIdentificacionUsuarios tipoIdentificacion;
     private String numeroIdentificacion;

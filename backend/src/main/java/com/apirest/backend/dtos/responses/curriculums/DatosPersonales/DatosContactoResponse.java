@@ -1,4 +1,4 @@
-package com.apirest.backend.models.curriculum.sections;
+package com.apirest.backend.dtos.responses.curriculums.DatosPersonales;
 
 import com.apirest.backend.models.enums.Curriculum.ZonaCurriculum;
 import lombok.AllArgsConstructor;
@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class DatosContacto {
+public class DatosContactoResponse {
     private String paisResidencia;
     private String departamentoResidencia;
     private String municipioResidencia;

@@ -1,4 +1,4 @@
-package com.apirest.backend.models.curriculum.sections;
+package com.apirest.backend.dtos.responses.curriculums.DatosPersonales;
 
 import com.apirest.backend.models.enums.Curriculum.EstadoCivilCurriculum;
 import com.apirest.backend.models.enums.Curriculum.PreferenciaEtnicaCurriculum;
@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class DatosDemograficos {
+public class DatosDemograficosResponse {
     private String nacionalidad;
     private EstadoCivilCurriculum estadoCivil;
     private PreferenciaEtnicaCurriculum preferenciaEtnica;

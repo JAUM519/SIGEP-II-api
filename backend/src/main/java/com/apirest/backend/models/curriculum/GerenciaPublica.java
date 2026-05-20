@@ -16,6 +16,6 @@ import java.util.ArrayList;
 public class GerenciaPublica {
     private ArrayList<Publicacion> publicaciones;
     private ArrayList<PremioReconocimiento> premiosReconocimientos;
-    private ArrayList<ParticipacionProyecto> participacionesPoryectos;
+    private ArrayList<ParticipacionProyecto> participacionesProyectos;
     private ArrayList<ParticipacionCorporacionEntidad> participacionesCorporacionesEntidades;
 }
