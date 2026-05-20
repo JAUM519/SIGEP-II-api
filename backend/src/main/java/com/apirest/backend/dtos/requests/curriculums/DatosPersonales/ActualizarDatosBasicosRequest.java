@@ -13,7 +13,7 @@ public class ActualizarDatosBasicosRequest {
     private ClaseLibretaMilitarCurriculum claseLibretaMilitar;
     @Size(max = 150)
     private String numeroLibretaMilitar;
-    @Size(max = 150)
+    @Max(1000000000)
     private Integer distritoMilitar;
     @Size(max = 150)
     private String libretaMilitar;

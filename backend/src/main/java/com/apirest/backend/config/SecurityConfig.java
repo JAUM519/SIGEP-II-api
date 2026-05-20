@@ -52,7 +52,7 @@ public class SecurityConfig {
                 // -----------------------------------------------------------------
 
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/login","/api/auth/pedirEnlace","/api/auth/recuperarContraseña").permitAll() // Asumo que registro también debería ser público
+                        .requestMatchers("/api/auth/login","/api/auth/pedirEnlace","/api/auth/recuperarContraseña").permitAll()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session

@@ -44,7 +44,7 @@ public class RegistrarFormacionAcademicaRequest {
     private String tarjetaProfesional;
     private Instant estudioExterior;
     @Size(max=150)
-    private String archivoTarjetaProfesioal;
+    private String archivoTarjetaProfesional;
     private Boolean verificTarjetaProfesional;
     @Size(max=150)
     private String archivoEducacionFormal;

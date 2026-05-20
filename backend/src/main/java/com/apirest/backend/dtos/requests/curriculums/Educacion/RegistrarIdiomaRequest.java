@@ -28,7 +28,7 @@ public class RegistrarIdiomaRequest {
     private IdiomaCurriculum lectura;
     @NotNull
     private IdiomaCurriculum redaccion;
-    @NotBlank
+    @NotNull
     private Boolean lenguaNativa;
     private String certificado;
 }

@@ -36,7 +36,7 @@ public class FormacionAcademica {
     private Instant fechaConvalidacion;
     private String tarjetaProfesional;
     private Instant estudioExterior;
-    private String archivoTarjetaProfesioal;
+    private String archivoTarjetaProfesional;
     private Boolean verificTarjetaProfesional;
     private String archivoEducacionFormal;
     private Boolean verificEducacionFormal;

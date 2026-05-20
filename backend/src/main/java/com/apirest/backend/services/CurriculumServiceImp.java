@@ -313,6 +313,7 @@ public class CurriculumServiceImp implements ICurriculumService{
         }
 
         FormacionAcademica formacionAcademica = FormacionAcademica.builder()
+                .id(new org.bson.types.ObjectId().toString())
                 .nivelAcademico(curriculumRequest.getNivelAcademico())
                 .nivelFormacion(curriculumRequest.getNivelFormacion())
                 .areaConocimiento(curriculumRequest.getAreaConocimiento())
@@ -328,7 +329,7 @@ public class CurriculumServiceImp implements ICurriculumService{
                 .fechaConvalidacion(curriculumRequest.getFechaConvalidacion())
                 .tarjetaProfesional(curriculumRequest.getTarjetaProfesional())
                 .estudioExterior(curriculumRequest.getEstudioExterior())
-                .archivoTarjetaProfesioal(curriculumRequest.getArchivoTarjetaProfesioal())
+                .archivoTarjetaProfesional(curriculumRequest.getArchivoTarjetaProfesional())
                 .verificTarjetaProfesional(curriculumRequest.getVerificTarjetaProfesional())
                 .archivoEducacionFormal(curriculumRequest.getArchivoEducacionFormal())
                 .verificEducacionFormal(curriculumRequest.getVerificEducacionFormal())
@@ -384,7 +385,7 @@ public class CurriculumServiceImp implements ICurriculumService{
             formacionAcademica.setEstudioExterior(curriculumRequest.getEstudioExterior());
         }
         if (curriculumRequest.getArchivoTarjetaProfesioal() != null && !curriculumRequest.getArchivoTarjetaProfesioal().isBlank()) {
-            formacionAcademica.setArchivoTarjetaProfesioal(curriculumRequest.getArchivoTarjetaProfesioal());
+            formacionAcademica.setArchivoTarjetaProfesional(curriculumRequest.getArchivoTarjetaProfesioal());
         }
         if (curriculumRequest.getVerificTarjetaProfesional() != null) {
             formacionAcademica.setVerificTarjetaProfesional(curriculumRequest.getVerificTarjetaProfesional());
@@ -418,6 +419,7 @@ public class CurriculumServiceImp implements ICurriculumService{
         }
 
         EducacionTrabajo educacionTrabajo = EducacionTrabajo.builder()
+                .id(new org.bson.types.ObjectId().toString())
                 .fechaFinalizacion(curriculumRequest.getFechaFinalizacion())
                 .numeroTotalHoras(curriculumRequest.getNumeroTotalHoras())
                 .pais(curriculumRequest.getPais())
@@ -473,6 +475,7 @@ public class CurriculumServiceImp implements ICurriculumService{
         }
 
         Idioma idiomaFinal = Idioma.builder()
+                .id(new org.bson.types.ObjectId().toString())
                 .idioma(curriculumRequest.getIdioma())
                 .fechaCertificado(curriculumRequest.getFechaCertificado())
                 .conversacion(curriculumRequest.getConversacion())
@@ -539,7 +542,7 @@ public class CurriculumServiceImp implements ICurriculumService{
                         .fechaConvalidacion(fa.getFechaConvalidacion())
                         .tarjetaProfesional(fa.getTarjetaProfesional())
                         .estudioExterior(fa.getEstudioExterior())
-                        .archivoTarjetaProfesioal(fa.getArchivoTarjetaProfesioal())
+                        .archivoTarjetaProfesioal(fa.getArchivoTarjetaProfesional())
                         .verificTarjetaProfesional(fa.getVerificTarjetaProfesional())
                         .archivoEducacionFormal(fa.getArchivoEducacionFormal())
                         .verificEducacionFormal(fa.getVerificEducacionFormal())
@@ -633,7 +636,7 @@ public class CurriculumServiceImp implements ICurriculumService{
                 .fechaConvalidacion(formacionAcademica.getFechaConvalidacion())
                 .tarjetaProfesional(formacionAcademica.getTarjetaProfesional())
                 .estudioExterior(formacionAcademica.getEstudioExterior())
-                .archivoTarjetaProfesioal(formacionAcademica.getArchivoTarjetaProfesioal())
+                .archivoTarjetaProfesioal(formacionAcademica.getArchivoTarjetaProfesional())
                 .verificTarjetaProfesional(formacionAcademica.getVerificTarjetaProfesional())
                 .archivoEducacionFormal(formacionAcademica.getArchivoEducacionFormal())
                 .verificEducacionFormal(formacionAcademica.getVerificEducacionFormal())
@@ -711,6 +714,7 @@ public class CurriculumServiceImp implements ICurriculumService{
         }
 
         ExperienciaLaboral experienciaLaboral = ExperienciaLaboral.builder()
+                .id(new org.bson.types.ObjectId().toString())
                 .tipoEntidad(curriculumRequest.getTipoEntidad())
                 .nombreEntidad(curriculumRequest.getNombreEntidad())
                 .pais(curriculumRequest.getPais())
@@ -788,6 +792,7 @@ public class CurriculumServiceImp implements ICurriculumService{
         }
 
         ExperienciaLaboralDocente experienciaLaboralDocente = ExperienciaLaboralDocente.builder()
+                .id(new org.bson.types.ObjectId().toString())
                 .tipoInstitucion(curriculumRequest.getTipoInstitucion())
                 .nombreInstitucion(curriculumRequest.getNombreInstitucion())
                 .pais(curriculumRequest.getPais())
@@ -1035,6 +1040,7 @@ public class CurriculumServiceImp implements ICurriculumService{
         }
 
         Publicacion publicacion = Publicacion.builder()
+                .id(new org.bson.types.ObjectId().toString())
                 .articulo(curriculumRequest.getArticulo())
                 .nombreArticulo(curriculumRequest.getNombreArticulo())
                 .libroResultadoInvestigacion(curriculumRequest.getLibroResultadoInvestigacion())
@@ -1064,6 +1070,7 @@ public class CurriculumServiceImp implements ICurriculumService{
         }
 
         PremioReconocimiento premioReconocimiento = PremioReconocimiento.builder()
+                .id(new org.bson.types.ObjectId().toString())
                 .tipo(curriculumRequest.getTipo())
                 .nombreEntidadOrganizacion(curriculumRequest.getNombreEntidadOrganizacion())
                 .fecha(curriculumRequest.getFecha())
@@ -1093,6 +1100,7 @@ public class CurriculumServiceImp implements ICurriculumService{
         }
 
         ParticipacionProyecto participacionProyecto = ParticipacionProyecto.builder()
+                .id(new org.bson.types.ObjectId().toString())
                 .nombre(curriculumRequest.getNombre())
                 .rolDesempeñado(curriculumRequest.getRolDesempeñado())
                 .nombreEntidadOrganizacion(curriculumRequest.getNombreEntidadOrganizacion())
@@ -1124,6 +1132,7 @@ public class CurriculumServiceImp implements ICurriculumService{
         }
 
         ParticipacionCorporacionEntidad participacionCorporacionEntidad = ParticipacionCorporacionEntidad.builder()
+                .id(new org.bson.types.ObjectId().toString())
                 .nombreCorporacion(curriculumRequest.getNombreCorporacion())
                 .nombreRazonSocialInstitucion(curriculumRequest.getNombreRazonSocialInstitucion())
                 .nombreEntidadOrganizacion(curriculumRequest.getNombreEntidadOrganizacion())
