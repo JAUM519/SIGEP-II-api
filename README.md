@@ -87,28 +87,28 @@ Permite:
 Está dividido en:
 
 1. **Datos personales**
-    - Datos básicos.
-    - Datos demográficos.
-    - Datos de contacto.
+   - Datos básicos.
+   - Datos demográficos.
+   - Datos de contacto.
 
 2. **Educación**
-    - Formación académica.
-    - Educación para el trabajo.
-    - Idiomas.
+   - Formación académica.
+   - Educación para el trabajo.
+   - Idiomas.
 
 3. **Experiencia laboral**
-    - Experiencia laboral general.
-    - Experiencia laboral docente.
+   - Experiencia laboral general.
+   - Experiencia laboral docente.
 
 4. **Gerencia pública**
-    - Publicaciones.
-    - Premios y reconocimientos.
-    - Participación en proyectos.
-    - Participación en corporaciones o entidades.
+   - Publicaciones.
+   - Premios y reconocimientos.
+   - Participación en proyectos.
+   - Participación en corporaciones o entidades.
 
 5. **Archivos**
-    - Carga de PDF, JPG, JPEG y PNG.
-    - Consulta de archivos cargados.
+   - Carga de PDF, JPG, JPEG y PNG.
+   - Consulta de archivos cargados.
 
 ---
 
