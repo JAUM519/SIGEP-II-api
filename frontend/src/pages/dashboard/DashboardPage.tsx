@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AppLayout from "../../components/layout/AppLayout";
 import { useAuth } from "../../hooks/useAuth";
-import { curriculumService } from "../../services/api";
+import { curriculumService, getApiError } from "../../services/api";
 
 type SectionKey = "datosPersonales" | "educacion" | "experiencia" | "gerenciaPublica";
 
@@ -27,6 +27,8 @@ const DashboardPage: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [sectionStatus, setSectionStatus] = useState<Record<SectionKey, SectionStatus>>(initialSectionStatus);
+  const [downloadingPdf, setDownloadingPdf] = useState(false);
+  const [pdfError, setPdfError] = useState<string | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -140,11 +142,40 @@ const DashboardPage: React.FC = () => {
     { label: "Estado del perfil", value: "Activo", iconClass: "green", icon: "✅" },
   ];
 
+  const handleDownloadPdf = async () => {
+    try {
+      setPdfError(null);
+      setDownloadingPdf(true);
+      await curriculumService.descargarHojaVidaPdf();
+    } catch (error) {
+      setPdfError(getApiError(error));
+    } finally {
+      setDownloadingPdf(false);
+    }
+  };
+
   return (
     <AppLayout title="Inicio">
       <div className="page-header animate-in">
-        <h2>Hoja de Vida</h2>
-        <p>Bienvenido al Sistema de Gestión del Empleo Público · {user?.numeroIdentificacion}</p>
+        <div style={{ display: "flex", justifyContent: "space-between", gap: 16, alignItems: "flex-start", flexWrap: "wrap" }}>
+          <div>
+            <h2>Hoja de Vida</h2>
+            <p>Bienvenido al Sistema de Gestión del Empleo Público · {user?.numeroIdentificacion}</p>
+          </div>
+          <button
+            type="button"
+            className="btn btn-primary"
+            onClick={handleDownloadPdf}
+            disabled={downloadingPdf}
+          >
+            {downloadingPdf ? "Generando PDF..." : "Descargar hoja de vida"}
+          </button>
+        </div>
+        {pdfError && (
+          <div className="alert alert-info" style={{ marginTop: 16 }}>
+            {pdfError}
+          </div>
+        )}
       </div>
 
       {/* Stats */}

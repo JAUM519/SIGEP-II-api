@@ -342,6 +342,22 @@ export const curriculumService = {
 
   registrarParticipacionCorporacionEntidad: (data: RegistrarParticipacionCorporacionEntidadRequest) =>
     api.post("/api/curriculum/gerenciaPublica/participacionCorporacionEntidad", data).then((r) => r.data),
+
+  descargarHojaVidaPdf: async (): Promise<void> => {
+    const response = await api.get<Blob>("/api/curriculum/pdf", {
+      responseType: "blob",
+    });
+
+    const objectUrl = URL.createObjectURL(response.data);
+    const link = document.createElement("a");
+    link.href = objectUrl;
+    link.download = "hoja-de-vida.pdf";
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+
+    window.setTimeout(() => URL.revokeObjectURL(objectUrl), 60_000);
+  },
 };
 
 export default api;
