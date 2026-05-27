@@ -4,13 +4,12 @@ import com.apirest.backend.models.UsuarioModelo;
 import com.apirest.backend.models.enums.Usuario.RolUsuarios;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.security.Key;
+import javax.crypto.SecretKey;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -26,7 +25,7 @@ public class JwtService {
     private long expiracionMinutos;
 
 
-    private Key getKey() {
+    private SecretKey getKey() {
         byte[] keyBytes = Decoders.BASE64.decode(llaveScreta);
         return Keys.hmacShaKeyFor(keyBytes);
     }
@@ -37,11 +36,11 @@ public class JwtService {
         claims.put("numeroIdentificacion", numeroIdentificacion);
 
         return Jwts.builder()
-                .setClaims(claims)
-                .setSubject(usuarioId)
-                .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + expiracionMinutos))
-                .signWith(getKey(), SignatureAlgorithm.HS256)
+                .claims(claims)
+                .subject(usuarioId)
+                .issuedAt(new Date(System.currentTimeMillis()))
+                .expiration(new Date(System.currentTimeMillis() + expiracionMinutos))
+                .signWith(getKey(), Jwts.SIG.HS256)
                 .compact();
 
     }
@@ -53,11 +52,11 @@ public class JwtService {
         claims.put("proposito", "recuperar_contraseña");
 
         return Jwts.builder()
-                .setClaims(claims)
-                .setSubject(usuarioId)
-                .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + 900000))
-                .signWith(getKey(), SignatureAlgorithm.HS256)
+                .claims(claims)
+                .subject(usuarioId)
+                .issuedAt(new Date(System.currentTimeMillis()))
+                .expiration(new Date(System.currentTimeMillis() + 900000))
+                .signWith(getKey(), Jwts.SIG.HS256)
                 .compact();
 
     }
@@ -79,10 +78,10 @@ public class JwtService {
     private Claims getAllClaims(String token){
         return Jwts
                 .parser()
-                .setSigningKey(getKey())
+                .verifyWith(getKey())
                 .build()
-                .parseClaimsJws(token)
-                .getBody();
+                .parseSignedClaims(token)
+                .getPayload();
     }
 
     public <T> T getClaim(String token, Function<Claims,T> claimsResolver){

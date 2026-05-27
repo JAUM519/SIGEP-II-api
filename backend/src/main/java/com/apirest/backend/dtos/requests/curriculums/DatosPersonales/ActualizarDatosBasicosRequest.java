@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ActualizarDatosBasicosRequest {
+    private Boolean tieneLibretaMilitar;
     private ClaseLibretaMilitarCurriculum claseLibretaMilitar;
     @Size(max = 150)
     private String numeroLibretaMilitar;
