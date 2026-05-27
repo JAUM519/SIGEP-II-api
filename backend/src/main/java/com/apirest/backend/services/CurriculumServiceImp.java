@@ -1009,8 +1009,8 @@ public class CurriculumServiceImp implements ICurriculumService{
 
         CurriculumModelo curriculumFinal = curriculumExiste.get();
 
-        if (curriculumFinal.getExperienciasLaborales() == null) {
-            throw new CurriculumNotFoundException("No hay experiencias laborales registradas");
+        if (curriculumFinal.getExperienciasLaboralesDocente() == null) {
+            throw new CurriculumNotFoundException("No hay experiencias laborales docentes registradas");
         }
 
         ExperienciaLaboralDocente experienciaLaboralDocente = curriculumFinal.getExperienciasLaboralesDocente().stream()

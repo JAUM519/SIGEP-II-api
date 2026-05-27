@@ -3,6 +3,9 @@ package com.apirest.backend.exceptions;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -68,4 +71,37 @@ class GlobalExceptionHandlerTest {
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
         assertEquals("Ocurrió un error inesperado", response.getBody());
     }
+
+    @Test
+    void handleAccessDeniedException_ReturnsForbidden() {
+        AccessDeniedException ex = new AccessDeniedException("Acceso denegado");
+        ResponseEntity<String> response = handler.handleAccessDeniedException(ex);
+        assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
+        assertEquals("No tienes permisos suficientes para realizar esta acción.", response.getBody());
+    }
+
+    @Test
+    void handleBadCredentialsException_ReturnsUnauthorized() {
+        BadCredentialsException ex = new BadCredentialsException("Bad credentials");
+        ResponseEntity<String> response = handler.handleBadCredentialsException(ex);
+        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+        assertEquals("Credenciales de acceso inválidas.", response.getBody());
+    }
+
+    @Test
+    void handleFileStorageException_ReturnsBadRequest() {
+        FileStorageException ex = new FileStorageException("Error de archivo");
+        ResponseEntity<String> response = handler.handleFileStorageException(ex);
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertEquals("Error de archivo", response.getBody());
+    }
+
+    @Test
+    void handleInvalidFormat_ReturnsBadRequest() {
+        HttpMessageNotReadableException ex = new HttpMessageNotReadableException("Formato inválido");
+        ResponseEntity<String> response = handler.handleInvalidFormat(ex);
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertEquals("Formato inválido en la solicitud", response.getBody());
+    }
+
 }
