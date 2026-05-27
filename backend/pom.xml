@@ -156,6 +156,12 @@
                         <goals>
                             <goal>report</goal>
                         </goals>
+                        <configuration>
+                            <excludes>
+                                <exclude>**/dtos/**</exclude>
+                                <exclude>**/models/**</exclude>
+                            </excludes>
+                        </configuration>
                     </execution>
                     <execution>
                         <id>check</id>
@@ -164,6 +170,10 @@
                             <goal>check</goal>
                         </goals>
                         <configuration>
+                            <excludes>
+                                <exclude>**/dtos/**</exclude>
+                                <exclude>**/models/**</exclude>
+                            </excludes>
                             <rules>
                                 <rule>
                                     <element>PACKAGE</element>
@@ -171,7 +181,7 @@
                                         <limit>
                                             <counter>LINE</counter>
                                             <value>COVEREDRATIO</value>
-                                            <minimum>0.0</minimum>
+                                            <minimum>0.5</minimum>
                                         </limit>
                                     </limits>
                                 </rule>

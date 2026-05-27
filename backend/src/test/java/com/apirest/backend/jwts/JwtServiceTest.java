@@ -2,6 +2,7 @@ package com.apirest.backend.jwts;
 
 import com.apirest.backend.models.UsuarioModelo;
 import com.apirest.backend.models.enums.Usuario.RolUsuarios;
+import io.jsonwebtoken.Claims;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -64,5 +65,27 @@ class JwtServiceTest {
     void isExpiradoToken_InvalidToken_ReturnsTrue() {
         boolean expirado = jwtService.isExpiradoToken("invalid.token.string");
         assertTrue(expirado);
+    }
+
+    @Test
+    void getClaim_ReturnsSubject() {
+        String token = jwtService.generarToken("user123", RolUsuarios.servidorPublico, "123456");
+        String subject = jwtService.getClaim(token, Claims::getSubject);
+        assertEquals("user123", subject);
+    }
+
+    @Test
+    void isExpiradoToken_TokenExpirado_ReturnsTrue() {
+        boolean expirado = jwtService.isExpiradoToken("token.invalido");
+        assertTrue(expirado);
+    }
+
+    @Test
+    void generarTokenRecuperacion_DevuelveTokenValido() {
+        String token = jwtService.generarTokenRecuperacion("user123", RolUsuarios.servidorPublico, "123456");
+        assertNotNull(token);
+        String proposito = (String) jwtService.getClaimByName(token, "proposito");
+        assertEquals("recuperar_contraseña", proposito);
+        assertFalse(jwtService.isExpiradoToken(token));
     }
 }
