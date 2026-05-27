@@ -3,6 +3,15 @@ import AppLayout from "../../components/layout/AppLayout";
 import FileUploadField from "../../components/common/FileUploadField";
 import { curriculumService, getApiError, toInstant } from "../../services/api";
 import {
+  addDateNotFutureError,
+  addDateOrderError,
+  addNumberRangeError,
+  addRequiredDateError,
+  addRequiredTextError,
+  hasText,
+  joinValidationErrors,
+} from "../../utils/curriculumValidation";
+import {
   AreaConocimiento,
   AreaConocimientoLabels,
   JornadaLaboral,
@@ -153,11 +162,33 @@ const ExperienciaPage: React.FC = () => {
   }, [cargarExperiencia]);
 
   const updateExp = (i: number, field: keyof ExperienciaLaboral, value: string | boolean | number | undefined) => {
-    setExps(prev => prev.map((item, idx) => idx === i ? { ...item, [field]: value } : item));
+    setExps(prev => prev.map((item, idx) => {
+      if (idx !== i) return item;
+
+      const updated = { ...item, [field]: value };
+
+      if (field === "trabajoActual" && value === true) {
+        updated.fechaRetiro = "";
+        updated.motivoRetiro = "";
+      }
+
+      return updated;
+    }));
   };
 
   const updateDocente = (i: number, field: keyof ExperienciaLaboralDocente, value: string | boolean | number | undefined) => {
-    setDocentes(prev => prev.map((item, idx) => idx === i ? { ...item, [field]: value } : item));
+    setDocentes(prev => prev.map((item, idx) => {
+      if (idx !== i) return item;
+
+      const updated = { ...item, [field]: value };
+
+      if (field === "trabajoActual" && value === true) {
+        updated.fechaTerminacion = "";
+        updated.motivoRetiro = "";
+      }
+
+      return updated;
+    }));
   };
 
   const showSuccess = () => {
@@ -165,11 +196,85 @@ const ExperienciaPage: React.FC = () => {
     setTimeout(() => setSaved(false), 3000);
   };
 
+  const validateCurrentTab = () => {
+    const errors: string[] = [];
+
+    if (tab === 0) {
+      exps.forEach((exp, index) => {
+        const prefix = `Empleo #${index + 1}`;
+
+        addRequiredTextError(errors, exp.nombreEntidad, `${prefix}: nombre de la entidad o empresa`);
+        addRequiredTextError(errors, exp.pais, `${prefix}: país`);
+        addRequiredTextError(errors, exp.departamento, `${prefix}: departamento`);
+        addRequiredTextError(errors, exp.municipio, `${prefix}: municipio`);
+        addRequiredTextError(errors, exp.direccionEntidad, `${prefix}: dirección de la entidad`);
+        addRequiredTextError(errors, exp.cargo, `${prefix}: cargo`);
+        addRequiredTextError(errors, exp.dependencia, `${prefix}: dependencia`);
+        addRequiredDateError(errors, exp.fechaIngreso, `${prefix}: fecha de ingreso`);
+        addDateNotFutureError(errors, exp.fechaIngreso, `${prefix}: fecha de ingreso`);
+        addNumberRangeError(errors, exp.horasPromedioMes, `${prefix}: horas promedio por mes`, 1, 744);
+        addNumberRangeError(errors, exp.tiempoExperiencia, `${prefix}: tiempo de experiencia`, 1, 1000000000);
+
+        if (exp.trabajoActual) {
+          if (hasText(exp.fechaRetiro) || hasText(exp.motivoRetiro)) {
+            errors.push(`${prefix}: si es trabajo actual, no debes registrar fecha ni motivo de retiro.`);
+          }
+        } else {
+          addRequiredDateError(errors, exp.fechaRetiro, `${prefix}: fecha de retiro`);
+          addDateNotFutureError(errors, exp.fechaRetiro, `${prefix}: fecha de retiro`);
+          addDateOrderError(errors, exp.fechaIngreso, exp.fechaRetiro, `${prefix}: la fecha de retiro no puede ser anterior a la fecha de ingreso.`);
+        }
+
+        if (exp.documentoVerificado && !hasText(exp.certificadoLaboral)) {
+          errors.push(`${prefix}: carga el certificado laboral antes de marcarlo como verificado.`);
+        }
+      });
+    }
+
+    if (tab === 1) {
+      docentes.forEach((doc, index) => {
+        const prefix = `Docencia #${index + 1}`;
+
+        addRequiredTextError(errors, doc.nombreInstitucion, `${prefix}: nombre de la institución`);
+        addRequiredTextError(errors, doc.pais, `${prefix}: país`);
+        addRequiredTextError(errors, doc.departamento, `${prefix}: departamento`);
+        addRequiredTextError(errors, doc.municipio, `${prefix}: municipio`);
+        addRequiredDateError(errors, doc.fechaIngreso, `${prefix}: fecha de ingreso`);
+        addDateNotFutureError(errors, doc.fechaIngreso, `${prefix}: fecha de ingreso`);
+        addNumberRangeError(errors, doc.horasPromedioMes, `${prefix}: horas promedio por mes`, 1, 744);
+        addNumberRangeError(errors, doc.tiempoExperiencia, `${prefix}: tiempo de experiencia`, 1, 1000000000);
+
+        if (doc.trabajoActual) {
+          if (hasText(doc.fechaTerminacion) || hasText(doc.motivoRetiro)) {
+            errors.push(`${prefix}: si es trabajo actual, no debes registrar fecha de terminación ni motivo de retiro.`);
+          }
+        } else {
+          addRequiredDateError(errors, doc.fechaTerminacion, `${prefix}: fecha de terminación`);
+          addDateNotFutureError(errors, doc.fechaTerminacion, `${prefix}: fecha de terminación`);
+          addDateOrderError(errors, doc.fechaIngreso, doc.fechaTerminacion, `${prefix}: la fecha de terminación no puede ser anterior a la fecha de ingreso.`);
+        }
+
+        if (doc.documentoVerificado && !hasText(doc.certificadoLaboral)) {
+          errors.push(`${prefix}: carga el certificado laboral antes de marcarlo como verificado.`);
+        }
+      });
+    }
+
+    return errors;
+  };
+
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
     setError("");
     setSaved(false);
+
+    const validationErrors = validateCurrentTab();
+    if (validationErrors.length) {
+      setError(joinValidationErrors(validationErrors));
+      setSaving(false);
+      return;
+    }
 
     try {
       if (tab === 0) {
@@ -384,7 +489,7 @@ const ExperienciaPage: React.FC = () => {
                     {!exp.trabajoActual && (
                       <div className="form-group">
                         <label className="form-label">Fecha de retiro</label>
-                        <input type="date" className="form-input" value={exp.fechaRetiro ?? ""} onChange={e => updateExp(i, "fechaRetiro", e.target.value)} />
+                        <input type="date" className="form-input" min={exp.fechaIngreso || undefined} value={exp.fechaRetiro ?? ""} onChange={e => updateExp(i, "fechaRetiro", e.target.value)} />
                       </div>
                     )}
 
@@ -397,7 +502,7 @@ const ExperienciaPage: React.FC = () => {
 
                     <div className="form-group">
                       <label className="form-label">Horas promedio / mes</label>
-                      <input type="number" className="form-input" value={exp.horasPromedioMes ?? 0} onChange={e => updateExp(i, "horasPromedioMes", Number(e.target.value))} min={0} max={1000000000} />
+                      <input type="number" className="form-input" value={exp.horasPromedioMes ?? 0} onChange={e => updateExp(i, "horasPromedioMes", Number(e.target.value))} min={1} max={744} />
                     </div>
 
                     <div className="form-group">
@@ -525,7 +630,7 @@ const ExperienciaPage: React.FC = () => {
                     {!doc.trabajoActual && (
                       <div className="form-group">
                         <label className="form-label">Fecha de terminación</label>
-                        <input type="date" className="form-input" value={doc.fechaTerminacion ?? ""} onChange={e => updateDocente(i, "fechaTerminacion", e.target.value)} />
+                        <input type="date" className="form-input" min={doc.fechaIngreso || undefined} value={doc.fechaTerminacion ?? ""} onChange={e => updateDocente(i, "fechaTerminacion", e.target.value)} />
                       </div>
                     )}
 
@@ -545,7 +650,7 @@ const ExperienciaPage: React.FC = () => {
 
                     <div className="form-group">
                       <label className="form-label">Horas promedio / mes</label>
-                      <input type="number" className="form-input" value={doc.horasPromedioMes ?? 0} onChange={e => updateDocente(i, "horasPromedioMes", Number(e.target.value))} min={0} max={1000000000} />
+                      <input type="number" className="form-input" value={doc.horasPromedioMes ?? 0} onChange={e => updateDocente(i, "horasPromedioMes", Number(e.target.value))} min={1} max={744} />
                     </div>
 
                     <div className="form-group">

@@ -2,6 +2,13 @@ import React, { useCallback, useEffect, useState } from "react";
 import AppLayout from "../../components/layout/AppLayout";
 import { curriculumService, getApiError } from "../../services/api";
 import {
+  addDateNotFutureError,
+  addDateOrderError,
+  addRequiredDateError,
+  addRequiredTextError,
+  joinValidationErrors,
+} from "../../utils/curriculumValidation";
+import {
   ArticuloPublicacion,
   LibroResultadoInvestigacion,
   TipoPremioReconocimiento,
@@ -121,11 +128,59 @@ const GerenciaPublicaPage: React.FC = () => {
     setTimeout(() => setSaved(false), 3000);
   };
 
+  const validateCurrentTab = () => {
+    const errors: string[] = [];
+
+    if (tab === 0) {
+      addRequiredTextError(errors, publicacion.nombreArticulo, "Nombre del artículo");
+      addRequiredTextError(errors, publicacion.nombreLibroRevista, "Libro o revista");
+      addRequiredTextError(errors, publicacion.nombrePublicacion, "Nombre de la publicación");
+    }
+
+    if (tab === 1) {
+      addRequiredTextError(errors, premio.nombreEntidadOrganizacion, "Entidad u organización");
+      addRequiredDateError(errors, premio.fecha, "Fecha del premio o reconocimiento");
+      addDateNotFutureError(errors, premio.fecha, "Fecha del premio o reconocimiento");
+      addRequiredTextError(errors, premio.pais, "País");
+      addRequiredTextError(errors, premio.departamento, "Departamento");
+      addRequiredTextError(errors, premio.municipio, "Municipio");
+    }
+
+    if (tab === 2) {
+      addRequiredTextError(errors, proyecto.nombre, "Nombre del proyecto");
+      addRequiredTextError(errors, proyecto.rolDesempeñado, "Rol desempeñado");
+      addRequiredTextError(errors, proyecto.nombreEntidadOrganizacion, "Entidad u organización");
+      addRequiredTextError(errors, proyecto.pais, "País");
+      addRequiredTextError(errors, proyecto.departamento, "Departamento");
+      addRequiredTextError(errors, proyecto.municipio, "Municipio");
+      addRequiredDateError(errors, proyecto.fechaInicio, "Fecha de inicio del proyecto");
+      addRequiredDateError(errors, proyecto.fechaTerminacion, "Fecha de terminación del proyecto");
+      addDateNotFutureError(errors, proyecto.fechaInicio, "Fecha de inicio del proyecto");
+      addDateNotFutureError(errors, proyecto.fechaTerminacion, "Fecha de terminación del proyecto");
+      addDateOrderError(errors, proyecto.fechaInicio, proyecto.fechaTerminacion, "La fecha de terminación del proyecto no puede ser anterior a la fecha de inicio.");
+    }
+
+    if (tab === 3) {
+      addRequiredTextError(errors, corporacion.nombreCorporacion, "Nombre de la corporación");
+      addRequiredTextError(errors, corporacion.nombreRazonSocialInstitucion, "Razón social de la institución");
+      addRequiredTextError(errors, corporacion.nombreEntidadOrganizacion, "Entidad u organización");
+    }
+
+    return errors;
+  };
+
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
     setError("");
     setSaved(false);
+
+    const validationErrors = validateCurrentTab();
+    if (validationErrors.length) {
+      setError(joinValidationErrors(validationErrors));
+      setSaving(false);
+      return;
+    }
 
     try {
       if (tab === 0) {
@@ -250,7 +305,7 @@ const GerenciaPublicaPage: React.FC = () => {
               <div className="form-group"><label className="form-label">Departamento <span className="required">*</span></label><input className="form-input" required value={proyecto.departamento} onChange={e => setProyecto(p => ({ ...p, departamento: e.target.value }))} /></div>
               <div className="form-group"><label className="form-label">Municipio <span className="required">*</span></label><input className="form-input" required value={proyecto.municipio} onChange={e => setProyecto(p => ({ ...p, municipio: e.target.value }))} /></div>
               <div className="form-group"><label className="form-label">Fecha inicio <span className="required">*</span></label><input type="date" className="form-input" required value={proyecto.fechaInicio} onChange={e => setProyecto(p => ({ ...p, fechaInicio: e.target.value }))} /></div>
-              <div className="form-group"><label className="form-label">Fecha terminación <span className="required">*</span></label><input type="date" className="form-input" required value={proyecto.fechaTerminacion} onChange={e => setProyecto(p => ({ ...p, fechaTerminacion: e.target.value }))} /></div>
+              <div className="form-group"><label className="form-label">Fecha terminación <span className="required">*</span></label><input type="date" className="form-input" required min={proyecto.fechaInicio || undefined} value={proyecto.fechaTerminacion} onChange={e => setProyecto(p => ({ ...p, fechaTerminacion: e.target.value }))} /></div>
             </div></div>
           </div>
         )}

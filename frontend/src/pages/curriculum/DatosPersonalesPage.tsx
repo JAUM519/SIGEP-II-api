@@ -3,6 +3,14 @@ import AppLayout from "../../components/layout/AppLayout";
 import FileUploadField from "../../components/common/FileUploadField";
 import { curriculumService, getApiError, toInstant } from "../../services/api";
 import {
+  addDateNotFutureError,
+  addNumberRangeError,
+  addRequiredDateError,
+  addRequiredTextError,
+  hasText,
+  joinValidationErrors,
+} from "../../utils/curriculumValidation";
+import {
   ClaseLibretaMilitar,
   EstadoCivil,
   EstadoCivilLabels,
@@ -38,7 +46,6 @@ const DatosPersonalesPage: React.FC = () => {
     fechaNacimiento: "",
     email: "",
     genero: Genero.Masculino,
-    tieneLibretaMilitar: false,
     claseLibretaMilitar: ClaseLibretaMilitar.Primera,
     numeroLibretaMilitar: "",
     distritoMilitar: "",
@@ -88,13 +95,6 @@ const DatosPersonalesPage: React.FC = () => {
             fechaNacimiento: toDateInput(data.fechaNacimiento),
             email: data.email ?? "",
             genero: data.genero ?? Genero.Masculino,
-            tieneLibretaMilitar: Boolean(
-              data.tieneLibretaMilitar ??
-              data.claseLibretaMilitar ??
-              data.numeroLibretaMilitar ??
-              data.distritoMilitar ??
-              data.libretaMilitar
-            ),
             claseLibretaMilitar: data.claseLibretaMilitar ?? ClaseLibretaMilitar.Primera,
             numeroLibretaMilitar: data.numeroLibretaMilitar ?? "",
             distritoMilitar: data.distritoMilitar ? String(data.distritoMilitar) : "",
@@ -154,6 +154,48 @@ const DatosPersonalesPage: React.FC = () => {
     setTimeout(() => setSaved(false), 3000);
   };
 
+  const validateActiveTab = () => {
+    const errors: string[] = [];
+
+    if (activeTab === 0) {
+      addRequiredTextError(errors, basicos.nombre, "Nombre completo");
+      addRequiredTextError(errors, basicos.numeroIdentificacion, "Número de identificación");
+      addRequiredDateError(errors, basicos.fechaNacimiento, "Fecha de nacimiento");
+      addDateNotFutureError(errors, basicos.fechaNacimiento, "Fecha de nacimiento");
+      addRequiredTextError(errors, basicos.email, "Correo electrónico institucional");
+
+      if (hasText(basicos.distritoMilitar)) {
+        addNumberRangeError(errors, Number(basicos.distritoMilitar), "Distrito militar", 1, 1000000000);
+      }
+
+      if (basicos.documentoVerificado && !hasText(basicos.documentoIdentificacion)) {
+        errors.push("Carga el documento de identificación antes de marcarlo como verificado.");
+      }
+
+      if (basicos.libretaVerificada && !hasText(basicos.libretaMilitar)) {
+        errors.push("Carga la libreta militar antes de marcarla como verificada.");
+      }
+    }
+
+    if (activeTab === 1) {
+      addRequiredTextError(errors, demo.nacionalidad, "Nacionalidad");
+      addRequiredTextError(errors, demo.paisNacimiento, "País de nacimiento");
+      addRequiredTextError(errors, demo.departamentoNacimiento, "Departamento de nacimiento");
+      addRequiredTextError(errors, demo.municipioNacimiento, "Municipio de nacimiento");
+    }
+
+    if (activeTab === 2) {
+      addRequiredTextError(errors, contacto.paisResidencia, "País de residencia");
+      addRequiredTextError(errors, contacto.departamentoResidencia, "Departamento de residencia");
+      addRequiredTextError(errors, contacto.municipioResidencia, "Municipio de residencia");
+      addRequiredTextError(errors, contacto.direccionResidencia, "Dirección de residencia");
+      addRequiredTextError(errors, contacto.celular, "Celular");
+      addRequiredTextError(errors, contacto.emailPersonalPrincipal, "Correo personal principal");
+    }
+
+    return errors;
+  };
+
   const guardarBasicos = async () => {
     const payload: RegistrarDatosBasicosRequest = {
       nombre: basicos.nombre.trim(),
@@ -162,20 +204,18 @@ const DatosPersonalesPage: React.FC = () => {
       fechaNacimiento: toInstant(basicos.fechaNacimiento) ?? "",
       email: basicos.email.trim(),
       genero: basicos.genero,
-      tieneLibretaMilitar: basicos.tieneLibretaMilitar,
-      claseLibretaMilitar: basicos.tieneLibretaMilitar ? basicos.claseLibretaMilitar : undefined,
-      numeroLibretaMilitar: basicos.tieneLibretaMilitar ? basicos.numeroLibretaMilitar.trim() || undefined : undefined,
-      distritoMilitar: basicos.tieneLibretaMilitar && basicos.distritoMilitar ? Number(basicos.distritoMilitar) : undefined,
+      claseLibretaMilitar: basicos.claseLibretaMilitar,
+      numeroLibretaMilitar: basicos.numeroLibretaMilitar.trim() || undefined,
+      distritoMilitar: basicos.distritoMilitar ? Number(basicos.distritoMilitar) : undefined,
       documentoIdentificacion: basicos.documentoIdentificacion.trim() || undefined,
       documentoVerificado: basicos.documentoVerificado,
-      libretaMilitar: basicos.tieneLibretaMilitar ? basicos.libretaMilitar.trim() || undefined : undefined,
-      libretaVerificada: basicos.tieneLibretaMilitar ? basicos.libretaVerificada : false,
+      libretaMilitar: basicos.libretaMilitar.trim() || undefined,
+      libretaVerificada: basicos.libretaVerificada,
       personaExpuestaPoliticamente: basicos.personaExpuestaPoliticamente,
     };
 
     if (datosBasicosExistentes) {
       await curriculumService.actualizarDatosBasicos({
-        tieneLibretaMilitar: payload.tieneLibretaMilitar,
         claseLibretaMilitar: payload.claseLibretaMilitar,
         numeroLibretaMilitar: payload.numeroLibretaMilitar,
         distritoMilitar: payload.distritoMilitar,
@@ -249,6 +289,13 @@ const DatosPersonalesPage: React.FC = () => {
     setSaving(true);
     setError("");
     setSaved(false);
+
+    const validationErrors = validateActiveTab();
+    if (validationErrors.length) {
+      setError(joinValidationErrors(validationErrors));
+      setSaving(false);
+      return;
+    }
 
     try {
       if (activeTab === 0) await guardarBasicos();
@@ -324,71 +371,33 @@ const DatosPersonalesPage: React.FC = () => {
               <div className="form-section-header"><div className="section-icon">🪖</div><h3>Libreta militar y verificaciones</h3></div>
               <div className="form-section-body">
                 <div className="form-grid cols-3">
-                  <div className="form-group span-2">
+                  <div className="form-group">
+                    <label className="form-label">Clase de libreta</label>
+                    <select className="form-select" value={basicos.claseLibretaMilitar} onChange={e => setBasicos(p => ({ ...p, claseLibretaMilitar: e.target.value as ClaseLibretaMilitar }))}>
+                      <option value={ClaseLibretaMilitar.Primera}>Primera clase</option>
+                      <option value={ClaseLibretaMilitar.Segunda}>Segunda clase</option>
+                      <option value={ClaseLibretaMilitar.Provisional}>Provisional</option>
+                    </select>
+                  </div>
+                  <div className="form-group"><label className="form-label">Número de libreta</label><input className="form-input" value={basicos.numeroLibretaMilitar} onChange={e => setBasicos(p => ({ ...p, numeroLibretaMilitar: e.target.value }))} /></div>
+                  <div className="form-group"><label className="form-label">Distrito militar</label><input type="number" min={1} className="form-input" value={basicos.distritoMilitar} onChange={e => setBasicos(p => ({ ...p, distritoMilitar: e.target.value }))} /></div>
+                  <div className="form-group">
                     <FileUploadField
                       label="Documento de identificación"
                       value={basicos.documentoIdentificacion}
                       onChange={(url) => setBasicos(p => ({ ...p, documentoIdentificacion: url, documentoVerificado: false }))}
                     />
                   </div>
-                </div>
-
-                <div className="form-checkbox-group" style={{ marginTop: 12 }}>
-                  <input type="checkbox" id="documentoVerificado" checked={basicos.documentoVerificado} onChange={e => setBasicos(p => ({ ...p, documentoVerificado: e.target.checked }))} />
-                  <label htmlFor="documentoVerificado">Documento de identificación verificado</label>
-                </div>
-
-                <div className="form-checkbox-group" style={{ marginTop: 18 }}>
-                  <input
-                    type="checkbox"
-                    id="tieneLibretaMilitar"
-                    checked={basicos.tieneLibretaMilitar}
-                    onChange={e => setBasicos(p => ({
-                      ...p,
-                      tieneLibretaMilitar: e.target.checked,
-                      numeroLibretaMilitar: e.target.checked ? p.numeroLibretaMilitar : "",
-                      distritoMilitar: e.target.checked ? p.distritoMilitar : "",
-                      libretaMilitar: e.target.checked ? p.libretaMilitar : "",
-                      libretaVerificada: e.target.checked ? p.libretaVerificada : false,
-                    }))}
-                  />
-                  <label htmlFor="tieneLibretaMilitar">Tengo libreta militar</label>
-                </div>
-
-                {!basicos.tieneLibretaMilitar && (
-                  <div className="alert alert-info" style={{ marginTop: 12 }}>
-                    Puedes continuar sin registrar libreta militar. Esta información no será solicitada al guardar.
+                  <div className="form-group">
+                    <FileUploadField
+                      label="Libreta militar"
+                      value={basicos.libretaMilitar}
+                      onChange={(url) => setBasicos(p => ({ ...p, libretaMilitar: url, libretaVerificada: false }))}
+                    />
                   </div>
-                )}
-
-                {basicos.tieneLibretaMilitar && (
-                  <>
-                    <div className="form-grid cols-3" style={{ marginTop: 14 }}>
-                      <div className="form-group">
-                        <label className="form-label">Clase de libreta</label>
-                        <select className="form-select" value={basicos.claseLibretaMilitar} onChange={e => setBasicos(p => ({ ...p, claseLibretaMilitar: e.target.value as ClaseLibretaMilitar }))}>
-                          <option value={ClaseLibretaMilitar.Primera}>Primera clase</option>
-                          <option value={ClaseLibretaMilitar.Segunda}>Segunda clase</option>
-                          <option value={ClaseLibretaMilitar.Provisional}>Provisional</option>
-                        </select>
-                      </div>
-                      <div className="form-group"><label className="form-label">Número de libreta</label><input className="form-input" value={basicos.numeroLibretaMilitar} onChange={e => setBasicos(p => ({ ...p, numeroLibretaMilitar: e.target.value }))} /></div>
-                      <div className="form-group"><label className="form-label">Distrito militar</label><input type="number" className="form-input" value={basicos.distritoMilitar} onChange={e => setBasicos(p => ({ ...p, distritoMilitar: e.target.value }))} /></div>
-                      <div className="form-group span-2">
-                        <FileUploadField
-                          label="Libreta militar"
-                          value={basicos.libretaMilitar}
-                          onChange={(url) => setBasicos(p => ({ ...p, libretaMilitar: url, libretaVerificada: false }))}
-                        />
-                      </div>
-                    </div>
-                    <div className="form-checkbox-group" style={{ marginTop: 12 }}>
-                      <input type="checkbox" id="libretaVerificada" checked={basicos.libretaVerificada} onChange={e => setBasicos(p => ({ ...p, libretaVerificada: e.target.checked }))} />
-                      <label htmlFor="libretaVerificada">Libreta verificada</label>
-                    </div>
-                  </>
-                )}
-
+                </div>
+                <div className="form-checkbox-group" style={{ marginTop: 12 }}><input type="checkbox" id="documentoVerificado" checked={basicos.documentoVerificado} onChange={e => setBasicos(p => ({ ...p, documentoVerificado: e.target.checked }))} /><label htmlFor="documentoVerificado">Documento de identificación verificado</label></div>
+                <div className="form-checkbox-group" style={{ marginTop: 12 }}><input type="checkbox" id="libretaVerificada" checked={basicos.libretaVerificada} onChange={e => setBasicos(p => ({ ...p, libretaVerificada: e.target.checked }))} /><label htmlFor="libretaVerificada">Libreta verificada</label></div>
                 <div className="form-checkbox-group" style={{ marginTop: 12 }}><input type="checkbox" id="pep" checked={basicos.personaExpuestaPoliticamente} onChange={e => setBasicos(p => ({ ...p, personaExpuestaPoliticamente: e.target.checked }))} /><label htmlFor="pep">¿Persona expuesta políticamente?</label></div>
               </div>
             </div>

@@ -3,6 +3,15 @@ import AppLayout from "../../components/layout/AppLayout";
 import FileUploadField from "../../components/common/FileUploadField";
 import { curriculumService, getApiError, toInstant } from "../../services/api";
 import {
+  addDateNotFutureError,
+  addDateOrderError,
+  addNumberRangeError,
+  addRequiredDateError,
+  addRequiredTextError,
+  hasText,
+  joinValidationErrors,
+} from "../../utils/curriculumValidation";
+import {
   AreaConocimiento,
   AreaConocimientoLabels,
   EstadoEstudio,
@@ -165,7 +174,22 @@ const EducacionPage: React.FC = () => {
   }, [cargarEducacion]);
 
   const updateFormacion = (i: number, field: keyof FormacionAcademica, value: string | boolean | number | undefined) => {
-    setFormaciones(prev => prev.map((f, idx) => idx === i ? { ...f, [field]: value } : f));
+    setFormaciones(prev => prev.map((f, idx) => {
+      if (idx !== i) return f;
+
+      const updated = { ...f, [field]: value };
+
+      if (field === "estadoEstudio" && value === EstadoEstudio.EnProceso) {
+        updated.fechaTerminacionMaterias = "";
+        updated.fechaGrado = "";
+      }
+
+      if (field === "estudioConvalidado" && value === false) {
+        updated.fechaConvalidacion = "";
+      }
+
+      return updated;
+    }));
   };
 
   const updateIdioma = (i: number, field: keyof Idioma, value: string | boolean) => {
@@ -181,11 +205,88 @@ const EducacionPage: React.FC = () => {
     setTimeout(() => setSaved(false), 3000);
   };
 
+  const validateCurrentTab = () => {
+    const errors: string[] = [];
+
+    if (tab === 0) {
+      formaciones.forEach((f, index) => {
+        const prefix = `Estudio #${index + 1}`;
+
+        addRequiredTextError(errors, f.pais, `${prefix}: país`);
+        addRequiredTextError(errors, f.institucionFormacionAcademica, `${prefix}: institución`);
+        addRequiredTextError(errors, f.tituloObtenido, `${prefix}: título obtenido`);
+
+        if (f.semestresAprobados !== undefined) {
+          addNumberRangeError(errors, f.semestresAprobados, `${prefix}: semestres aprobados`, 0, 12);
+        }
+
+        if (f.estadoEstudio === EstadoEstudio.EnProceso) {
+          if (hasText(f.fechaTerminacionMaterias) || hasText(f.fechaGrado)) {
+            errors.push(`${prefix}: si el estudio está en proceso, no debes registrar fecha de terminación de materias ni fecha de grado.`);
+          }
+        } else {
+          addRequiredDateError(errors, f.fechaTerminacionMaterias, `${prefix}: fecha de terminación de materias`);
+          addRequiredDateError(errors, f.fechaGrado, `${prefix}: fecha de grado`);
+          addDateNotFutureError(errors, f.fechaTerminacionMaterias, `${prefix}: fecha de terminación de materias`);
+          addDateNotFutureError(errors, f.fechaGrado, `${prefix}: fecha de grado`);
+          addDateOrderError(
+            errors,
+            f.fechaTerminacionMaterias,
+            f.fechaGrado,
+            `${prefix}: la fecha de terminación de materias no puede ser posterior a la fecha de grado.`,
+          );
+        }
+
+        if (f.estudioConvalidado) {
+          addRequiredDateError(errors, f.fechaConvalidacion, `${prefix}: fecha de convalidación`);
+          addDateNotFutureError(errors, f.fechaConvalidacion, `${prefix}: fecha de convalidación`);
+        } else if (hasText(f.fechaConvalidacion)) {
+          errors.push(`${prefix}: elimina la fecha de convalidación si el estudio no está convalidado.`);
+        }
+
+        addDateNotFutureError(errors, f.estudioExterior, `${prefix}: fecha de estudio en el exterior`);
+      });
+    }
+
+    if (tab === 1) {
+      idiomas.forEach((idioma, index) => {
+        const prefix = `Idioma #${index + 1}`;
+
+        addRequiredTextError(errors, idioma.idioma, `${prefix}: idioma`);
+        addRequiredDateError(errors, idioma.fechaCertificado, `${prefix}: fecha del certificado`);
+        addDateNotFutureError(errors, idioma.fechaCertificado, `${prefix}: fecha del certificado`);
+      });
+    }
+
+    if (tab === 2) {
+      trabajos.forEach((trabajo, index) => {
+        const prefix = `Capacitación #${index + 1}`;
+
+        addRequiredTextError(errors, trabajo.nombre, `${prefix}: nombre`);
+        addRequiredTextError(errors, trabajo.institucion, `${prefix}: institución`);
+        addRequiredTextError(errors, trabajo.pais, `${prefix}: país`);
+        addRequiredDateError(errors, trabajo.fechaFinalizacion, `${prefix}: fecha de finalización`);
+        addDateNotFutureError(errors, trabajo.fechaFinalizacion, `${prefix}: fecha de finalización`);
+        addNumberRangeError(errors, trabajo.numeroTotalHoras, `${prefix}: total de horas`, 1, 1000000000);
+        addRequiredTextError(errors, trabajo.diplomaActaCertificadoEstudio, `${prefix}: diploma, acta o certificado`);
+      });
+    }
+
+    return errors;
+  };
+
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
     setError("");
     setSaved(false);
+
+    const validationErrors = validateCurrentTab();
+    if (validationErrors.length) {
+      setError(joinValidationErrors(validationErrors));
+      setSaving(false);
+      return;
+    }
 
     try {
       if (tab === 0) {
@@ -395,12 +496,12 @@ const EducacionPage: React.FC = () => {
 
                     <div className="form-group">
                       <label className="form-label">Fecha terminación materias</label>
-                      <input type="date" className="form-input" value={f.fechaTerminacionMaterias ?? ""} onChange={e => updateFormacion(i, "fechaTerminacionMaterias", e.target.value)} />
+                      <input type="date" className="form-input" disabled={f.estadoEstudio === EstadoEstudio.EnProceso} value={f.estadoEstudio === EstadoEstudio.EnProceso ? "" : f.fechaTerminacionMaterias ?? ""} onChange={e => updateFormacion(i, "fechaTerminacionMaterias", e.target.value)} />
                     </div>
 
                     <div className="form-group">
                       <label className="form-label">Fecha de grado</label>
-                      <input type="date" className="form-input" value={f.fechaGrado ?? ""} onChange={e => updateFormacion(i, "fechaGrado", e.target.value)} />
+                      <input type="date" className="form-input" disabled={f.estadoEstudio === EstadoEstudio.EnProceso} min={f.fechaTerminacionMaterias || undefined} value={f.estadoEstudio === EstadoEstudio.EnProceso ? "" : f.fechaGrado ?? ""} onChange={e => updateFormacion(i, "fechaGrado", e.target.value)} />
                     </div>
 
                     <div className="form-group span-2">
@@ -427,6 +528,15 @@ const EducacionPage: React.FC = () => {
                     <input type="checkbox" id={`conv-${i}`} checked={f.estudioConvalidado} onChange={e => updateFormacion(i, "estudioConvalidado", e.target.checked)} />
                     <label htmlFor={`conv-${i}`}>¿Estudio convalidado?</label>
                   </div>
+
+                  {f.estudioConvalidado && (
+                    <div className="form-grid cols-3" style={{ marginTop: 12 }}>
+                      <div className="form-group">
+                        <label className="form-label">Fecha de convalidación <span className="required">*</span></label>
+                        <input type="date" className="form-input" required value={f.fechaConvalidacion ?? ""} onChange={e => updateFormacion(i, "fechaConvalidacion", e.target.value)} />
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             ))}
