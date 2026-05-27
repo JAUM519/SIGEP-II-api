@@ -2,7 +2,6 @@ package com.apirest.backend.controllers;
 
 import com.apirest.backend.dtos.responses.archivos.ArchivoResponse;
 import com.apirest.backend.services.FileStorageService;
-import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -39,13 +38,12 @@ public class ArchivoController {
     }
 
     @GetMapping("/{nombreArchivo:.+}")
-    public ResponseEntity<Resource> obtenerArchivo(@PathVariable String nombreArchivo) {
-        Resource resource = fileStorageService.cargarArchivo(nombreArchivo);
-        String contentType = fileStorageService.obtenerTipoContenido(nombreArchivo);
+    public ResponseEntity<byte[]> obtenerArchivo(@PathVariable String nombreArchivo) {
+        FileStorageService.LoadedFile loadedFile = fileStorageService.cargarArchivo(nombreArchivo);
 
         return ResponseEntity.ok()
-                .contentType(MediaType.parseMediaType(contentType))
-                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + resource.getFilename() + "\"")
-                .body(resource);
+                .contentType(MediaType.parseMediaType(loadedFile.tipoContenido()))
+                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + loadedFile.nombreArchivo() + "\"")
+                .body(loadedFile.contenido());
     }
 }
