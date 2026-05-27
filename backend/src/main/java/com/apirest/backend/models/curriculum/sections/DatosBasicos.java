@@ -21,6 +21,7 @@ public class DatosBasicos {
     private Instant fechaNacimiento;
     private String email;
     private GeneroCurriculum genero;
+    private Boolean tieneLibretaMilitar;
     private ClaseLibretaMilitarCurriculum claseLibretaMilitar;
     private String numeroLibretaMilitar;
     private Integer distritoMilitar;

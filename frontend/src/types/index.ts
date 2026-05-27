@@ -407,6 +407,7 @@ export interface DatosBasicos {
   fechaNacimiento: string;
   email: string;
   genero: Genero;
+  tieneLibretaMilitar?: boolean;
   claseLibretaMilitar?: ClaseLibretaMilitar;
   numeroLibretaMilitar?: string;
   distritoMilitar?: number;
@@ -422,6 +423,7 @@ export interface RegistrarDatosBasicosRequest extends Omit<DatosBasicos, "fechaN
 }
 
 export interface ActualizarDatosBasicosRequest {
+  tieneLibretaMilitar?: boolean;
   claseLibretaMilitar?: ClaseLibretaMilitar;
   numeroLibretaMilitar?: string;
   distritoMilitar?: number;

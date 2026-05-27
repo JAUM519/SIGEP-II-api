@@ -64,13 +64,14 @@ public class CurriculumServiceImp implements ICurriculumService{
                         .fechaNacimiento(curriculumRequest.getFechaNacimiento())
                         .email(curriculumRequest.getEmail())
                         .genero(curriculumRequest.getGenero())
-                        .claseLibretaMilitar(curriculumRequest.getClaseLibretaMilitar())
-                        .numeroLibretaMilitar(curriculumRequest.getNumeroLibretaMilitar())
-                        .distritoMilitar(curriculumRequest.getDistritoMilitar())
+                        .tieneLibretaMilitar(Boolean.TRUE.equals(curriculumRequest.getTieneLibretaMilitar()))
+                        .claseLibretaMilitar(Boolean.TRUE.equals(curriculumRequest.getTieneLibretaMilitar()) ? curriculumRequest.getClaseLibretaMilitar() : null)
+                        .numeroLibretaMilitar(Boolean.TRUE.equals(curriculumRequest.getTieneLibretaMilitar()) ? curriculumRequest.getNumeroLibretaMilitar() : null)
+                        .distritoMilitar(Boolean.TRUE.equals(curriculumRequest.getTieneLibretaMilitar()) ? curriculumRequest.getDistritoMilitar() : null)
                         .documentoIdentificacion(curriculumRequest.getDocumentoIdentificacion())
                         .documentoVerificado(curriculumRequest.getDocumentoVerificado())
-                        .libretaMilitar(curriculumRequest.getLibretaMilitar())
-                        .libretaVerificada(curriculumRequest.getLibretaVerificada())
+                        .libretaMilitar(Boolean.TRUE.equals(curriculumRequest.getTieneLibretaMilitar()) ? curriculumRequest.getLibretaMilitar() : null)
+                        .libretaVerificada(Boolean.TRUE.equals(curriculumRequest.getTieneLibretaMilitar()) ? curriculumRequest.getLibretaVerificada() : false)
                         .personaExpuestaPoliticamente(curriculumRequest.getPersonaExpuestaPoliticamente())
                         .build());
 
@@ -85,13 +86,24 @@ public class CurriculumServiceImp implements ICurriculumService{
         }
         CurriculumModelo curriculumFinal = curriculumExiste.get();
 
-        if(curriculumRequest.getClaseLibretaMilitar() != null) {
+        if (curriculumRequest.getTieneLibretaMilitar() != null) {
+            curriculumFinal.getDatosPersonales().getDatosBasicos().setTieneLibretaMilitar(curriculumRequest.getTieneLibretaMilitar());
+            if (Boolean.FALSE.equals(curriculumRequest.getTieneLibretaMilitar())) {
+                curriculumFinal.getDatosPersonales().getDatosBasicos().setClaseLibretaMilitar(null);
+                curriculumFinal.getDatosPersonales().getDatosBasicos().setNumeroLibretaMilitar(null);
+                curriculumFinal.getDatosPersonales().getDatosBasicos().setDistritoMilitar(null);
+                curriculumFinal.getDatosPersonales().getDatosBasicos().setLibretaMilitar(null);
+                curriculumFinal.getDatosPersonales().getDatosBasicos().setLibretaVerificada(false);
+            }
+        }
+
+        if(!Boolean.FALSE.equals(curriculumRequest.getTieneLibretaMilitar()) && curriculumRequest.getClaseLibretaMilitar() != null) {
             curriculumFinal.getDatosPersonales().getDatosBasicos().setClaseLibretaMilitar(curriculumRequest.getClaseLibretaMilitar());
         }
-        if (curriculumRequest.getNumeroLibretaMilitar() != null && !curriculumRequest.getNumeroLibretaMilitar().isBlank()){
+        if (!Boolean.FALSE.equals(curriculumRequest.getTieneLibretaMilitar()) && curriculumRequest.getNumeroLibretaMilitar() != null && !curriculumRequest.getNumeroLibretaMilitar().isBlank()){
             curriculumFinal.getDatosPersonales().getDatosBasicos().setNumeroLibretaMilitar(curriculumRequest.getNumeroLibretaMilitar());
         }
-        if (curriculumRequest.getDistritoMilitar() != null){
+        if (!Boolean.FALSE.equals(curriculumRequest.getTieneLibretaMilitar()) && curriculumRequest.getDistritoMilitar() != null){
             curriculumFinal.getDatosPersonales().getDatosBasicos().setDistritoMilitar(curriculumRequest.getDistritoMilitar());
         }
         if (curriculumRequest.getDocumentoIdentificacion() != null && !curriculumRequest.getDocumentoIdentificacion().isBlank()){
@@ -100,10 +112,10 @@ public class CurriculumServiceImp implements ICurriculumService{
         if (curriculumRequest.getDocumentoVerificado() != null) {
             curriculumFinal.getDatosPersonales().getDatosBasicos().setDocumentoVerificado(curriculumRequest.getDocumentoVerificado());
         }
-        if (curriculumRequest.getLibretaMilitar() != null && !curriculumRequest.getLibretaMilitar().isBlank()){
+        if (!Boolean.FALSE.equals(curriculumRequest.getTieneLibretaMilitar()) && curriculumRequest.getLibretaMilitar() != null && !curriculumRequest.getLibretaMilitar().isBlank()){
             curriculumFinal.getDatosPersonales().getDatosBasicos().setLibretaMilitar(curriculumRequest.getLibretaMilitar());
         }
-        if (curriculumRequest.getLibretaVerificada() != null) {
+        if (!Boolean.FALSE.equals(curriculumRequest.getTieneLibretaMilitar()) && curriculumRequest.getLibretaVerificada() != null) {
             curriculumFinal.getDatosPersonales().getDatosBasicos().setLibretaVerificada(curriculumRequest.getLibretaVerificada());
         }
         if (curriculumRequest.getPersonaExpuestaPoliticamente() != null){
@@ -245,6 +257,7 @@ public class CurriculumServiceImp implements ICurriculumService{
                 .fechaNacimiento(curriculumFinal.getDatosPersonales().getDatosBasicos().getFechaNacimiento())
                 .email(curriculumFinal.getDatosPersonales().getDatosBasicos().getEmail())
                 .genero(curriculumFinal.getDatosPersonales().getDatosBasicos().getGenero())
+                .tieneLibretaMilitar(curriculumFinal.getDatosPersonales().getDatosBasicos().getTieneLibretaMilitar())
                 .claseLibretaMilitar(curriculumFinal.getDatosPersonales().getDatosBasicos().getClaseLibretaMilitar())
                 .numeroLibretaMilitar(curriculumFinal.getDatosPersonales().getDatosBasicos().getNumeroLibretaMilitar())
                 .distritoMilitar(curriculumFinal.getDatosPersonales().getDatosBasicos().getDistritoMilitar())
@@ -996,8 +1009,8 @@ public class CurriculumServiceImp implements ICurriculumService{
 
         CurriculumModelo curriculumFinal = curriculumExiste.get();
 
-        if (curriculumFinal.getExperienciasLaborales() == null) {
-            throw new CurriculumNotFoundException("No hay experiencias laborales registradas");
+        if (curriculumFinal.getExperienciasLaboralesDocente() == null) {
+            throw new CurriculumNotFoundException("No hay experiencias laborales docentes registradas");
         }
 
         ExperienciaLaboralDocente experienciaLaboralDocente = curriculumFinal.getExperienciasLaboralesDocente().stream()

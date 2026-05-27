@@ -145,7 +145,10 @@ const cleanErrorMessage = (message: string): string => {
     normalized.includes("http") ||
     normalized.includes("api") ||
     normalized.includes("exception") ||
-    normalized.includes("stack")
+    normalized.includes("stack") ||
+    normalized.includes("cloudflare") ||
+    normalized.includes("s3") ||
+    normalized.includes("r2")
   ) {
     return "No fue posible completar la acción. Inténtalo nuevamente o vuelve a iniciar sesión.";
   }
@@ -230,6 +233,11 @@ export const fileService = {
   },
 
   verArchivo: async (url: string): Promise<void> => {
+    if (/^https?:\/\//i.test(url)) {
+      window.open(url, "_blank", "noopener,noreferrer");
+      return;
+    }
+
     const response = await api.get<Blob>(url, { responseType: "blob" });
     const objectUrl = URL.createObjectURL(response.data);
     window.open(objectUrl, "_blank", "noopener,noreferrer");

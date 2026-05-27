@@ -133,9 +133,19 @@ public class CurriculumPdfService {
             addField(table, "Fecha de nacimiento", basicos.getFechaNacimiento());
             addField(table, "Correo", basicos.getEmail());
             addField(table, "Género", basicos.getGenero());
-            addField(table, "Libreta militar", basicos.getClaseLibretaMilitar());
-            addField(table, "Número libreta militar", basicos.getNumeroLibretaMilitar());
-            addField(table, "Distrito militar", basicos.getDistritoMilitar());
+            boolean tieneLibretaMilitar = Boolean.TRUE.equals(basicos.getTieneLibretaMilitar())
+                    || basicos.getClaseLibretaMilitar() != null
+                    || hasText(basicos.getNumeroLibretaMilitar())
+                    || basicos.getDistritoMilitar() != null
+                    || hasText(basicos.getLibretaMilitar());
+            addField(table, "Libreta militar", tieneLibretaMilitar ? "Sí" : "No aplica");
+            if (tieneLibretaMilitar) {
+                addField(table, "Clase de libreta militar", basicos.getClaseLibretaMilitar());
+                addField(table, "Número libreta militar", basicos.getNumeroLibretaMilitar());
+                addField(table, "Distrito militar", basicos.getDistritoMilitar());
+                addField(table, "Archivo libreta militar", basicos.getLibretaMilitar());
+                addField(table, "Libreta verificada", basicos.getLibretaVerificada());
+            }
             addField(table, "Documento de identificación", basicos.getDocumentoIdentificacion());
             addField(table, "Documento verificado", basicos.getDocumentoVerificado());
             addField(table, "Persona expuesta políticamente", basicos.getPersonaExpuestaPoliticamente());
@@ -430,6 +440,10 @@ public class CurriculumPdfService {
         return font;
     }
 
+    private boolean hasText(String value) {
+        return value != null && !value.trim().isEmpty();
+    }
+
     private String value(Object rawValue) {
         if (rawValue == null) {
             return "No registrado";
@@ -452,23 +466,45 @@ public class CurriculumPdfService {
     }
 
     private String humanize(String raw) {
-        String cleaned = raw.replace('_', ' ').replace('-', ' ').trim();
-        if (cleaned.isEmpty() || cleaned.contains("/api/archivos/")) {
-            return cleaned.isEmpty() ? "No registrado" : cleaned;
+        if (raw == null || raw.trim().isEmpty()) {
+            return "No registrado";
         }
 
-        String lower = cleaned.toLowerCase(Locale.ROOT);
-        StringBuilder result = new StringBuilder();
-        for (String word : lower.split(" ")) {
-            if (word.isBlank()) {
-                continue;
-            }
-            if (result.length() > 0) {
-                result.append(' ');
-            }
-            result.append(Character.toUpperCase(word.charAt(0))).append(word.substring(1));
+        String trimmed = raw.trim();
+
+        // No tocar enlaces ni rutas de archivos
+        if (isUrl(trimmed) || trimmed.contains("/api/archivos/")) {
+            return trimmed;
         }
-        return result.toString();
+
+        String cleaned = trimmed.replace('_', ' ').replace('-', ' ').trim();
+
+        if (cleaned.isEmpty()) {
+            return "No registrado";
+        }
+
+        String[] words = cleaned.toLowerCase().split("\\s+");
+        StringBuilder result = new StringBuilder();
+
+        for (String word : words) {
+            if (!word.isBlank()) {
+                result.append(Character.toUpperCase(word.charAt(0)))
+                        .append(word.substring(1))
+                        .append(" ");
+            }
+        }
+
+        return result.toString().trim();
+    }
+
+    private boolean isUrl(String value) {
+        if (value == null || value.trim().isEmpty()) {
+            return false;
+        }
+
+        String text = value.trim().toLowerCase();
+
+        return text.startsWith("http://") || text.startsWith("https://");
     }
 
     private <T> List<T> safeList(List<T> values) {
